@@ -9,8 +9,8 @@
     <style>
         body { font-family: sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
         .container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1, h2 { color: #114ed7; text-align: center; }
-        h2 { border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; }
+        h1, h4 { color: #114ed7; text-align: center; }
+        h4 { border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; }
         form { display: flex; flex-direction: column; gap: 15px; }
         input, select, button { padding: 12px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; }
         button { background-color: #114ed7; color: white; border: none; cursor: pointer; font-weight: bold; }
@@ -19,13 +19,22 @@
         .item { background-color: #f9f9f9; padding: 15px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
         .item-details { flex-grow: 1; }
         .delete-btn { background-color: #e74c3c; color: white; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; }
+        .current-value { font-style: italic; color: #555; text-align: center; margin-bottom: 15px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Admin Panel JBTV</h1>
+        <h1>Admin JB TV</h1>
 
-        <h2>Tambah Jadwal Kajian Rutin</h2>
+        <h4>Masukkan Tanggal Kajian Pekan Ini</h4>
+        <form id="tanggalForm">
+            <p class="current-value">Saat ini: <strong id="currentTanggalText">Memuat...</strong></p>
+            <input type="text" id="tanggalText" placeholder="Contoh: Jadwal Kajian, 2 Juli - 8 Juli 2025" required>
+            <button type="submit">Update</button>
+        </form>
+
+
+        <h4>Jadwal Kajian Rutin</h4>
         <form id="jadwalForm">
             <select id="jadwalUstadz" required>
                 <option value="">-- Pilih Ustadz --</option>
@@ -36,20 +45,18 @@
             <input type="text" id="jadwalJenis" placeholder="Jenis Kajian (cth: Kajian Malam)" required>
             <input type="text" id="jadwalWaktu" placeholder="Waktu (cth: Malam Ahad)" required>
             <input type="text" id="jadwalLokasi" placeholder="Lokasi (cth: Masjid Jami' Nurah)" required>
-            <button type="submit">Simpan Jadwal</button>
+            <button type="submit">Simpan</button>
         </form>
         <div id="jadwalList" class="item-list"></div>
-
-        <h2>Tambah Pengumuman Penting</h2>
+        
+        <h4>Pengumuman Penting</h4>
         <form id="pengumumanForm">
             <input type="text" id="pengumumanJudul" placeholder="Judul (cth: Tabligh Akbar)" required>
             <input type="text" id="pengumumanPemateri" placeholder="Pemateri (cth: Ustadz Fulan, Lc.)" required>
             <input type="text" id="pengumumanWaktu" placeholder="Waktu (cth: Kamis, 26 Juni 2025)" required>
             <input type="text" id="pengumumanLokasi" placeholder="Lokasi (cth: Masjid Jami' Nurah)" required>
-            
             <input type="url" id="pengumumanFlyerUrl" placeholder="Tempel URL Langsung (Direct Link) gambar di sini" required>
-            
-            <button type="submit">Simpan Pengumuman</button>
+            <button type="submit">Simpan</button>
         </form>
         <div id="pengumumanList" class="item-list"></div>
     </div>
@@ -69,11 +76,38 @@ document.addEventListener("DOMContentLoaded", function () {
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // Tidak perlu inisialisasi storage lagi
-    // const storage = firebase.storage(); 
-
+    // Referensi ke 'folder' di database
+    const tanggalRef = db.ref('infoSitus/rentangTanggal'); // path baru untuk tanggal
     const jadwalRef = db.ref('jadwalKajian');
     const pengumumanRef = db.ref('pengumuman');
+    
+    // === Logika Form Rentang Tanggal (INI YANG BARU) ===
+    const tanggalForm = document.getElementById('tanggalForm');
+    const tanggalInput = document.getElementById('tanggalText');
+    const currentTanggalText = document.getElementById('currentTanggalText');
+    
+    // 1. Tampilkan nilai yang ada di database saat ini
+    tanggalRef.on('value', (snapshot) => {
+        if (snapshot.exists()) {
+            currentTanggalText.textContent = snapshot.val();
+        } else {
+            currentTanggalText.textContent = 'Belum diatur';
+        }
+    });
+
+    // 2. Simpan nilai baru ke database saat form di-submit
+    tanggalForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newTanggalValue = tanggalInput.value;
+        tanggalRef.set(newTanggalValue)
+            .then(() => {
+                alert('Rentang tanggal berhasil diupdate!');
+                tanggalForm.reset();
+            })
+            .catch((error) => {
+                alert('Gagal mengupdate: ' + error.message);
+            });
+    });
 
     // === Logika Form Jadwal Kajian (Tidak Berubah) ===
     const jadwalForm = document.getElementById('jadwalForm');
@@ -93,23 +127,18 @@ document.addEventListener("DOMContentLoaded", function () {
         alert('Jadwal berhasil disimpan!');
     });
     
-    // === Logika Form Pengumuman (INI YANG DIUBAH) ===
+    // === Logika Form Pengumuman (Tidak Berubah) ===
     const pengumumanForm = document.getElementById('pengumumanForm');
     pengumumanForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        
-        // Langsung ambil URL dari input teks
         const flyerUrl = document.getElementById('pengumumanFlyerUrl').value;
-
-        // Simpan data ke database
         pengumumanRef.push({
             judul: document.getElementById('pengumumanJudul').value,
             pemateri: document.getElementById('pengumumanPemateri').value,
             waktu: document.getElementById('pengumumanWaktu').value,
             lokasi: document.getElementById('pengumumanLokasi').value,
-            flyerUrl: flyerUrl // Simpan URL yang di-paste
+            flyerUrl: flyerUrl
         });
-        
         pengumumanForm.reset();
         alert('Pengumuman berhasil disimpan!');
     });
