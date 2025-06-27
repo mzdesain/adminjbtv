@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - JBTV</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #114ed7; text-align: center; }
+        h2 { border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; }
+        form { display: flex; flex-direction: column; gap: 15px; }
+        input, select, button { padding: 12px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; }
+        button { background-color: #114ed7; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #0038a3; }
+        .item-list { margin-top: 20px; }
+        .item { background-color: #f9f9f9; padding: 15px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .item-details { flex-grow: 1; }
+        .delete-btn { background-color: #e74c3c; color: white; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; }
+        #loading { display: none; text-align: center; padding: 10px; background-color: #ffc107; color: #333; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admi Panel JB TV</h1>
+
+        <h2>Tambah Jadwal Kajian Rutin</h2>
+        <form id="jadwalForm">
+            <select id="jadwalUstadz" required>
+                <option value="">-- Pilih Ustadz --</option>
+                <option value="ustad1">TGH. Suharni Abdul Manan, Lc.</option>
+                <option value="ustad2">Ust. Zamakhsyari Dhofir, Lc., M.A.</option>
+                <option value="ustad3">Ust. Ahmad Marwazi Manar, S.H., M.A.</option>
+            </select>
+            <input type="text" id="jadwalJenis" placeholder="Jenis Kajian (cth: Kajian Malam)" required>
+            <input type="text" id="jadwalWaktu" placeholder="Waktu (cth: Tanggal | Malam Ahad)" required>
+            <input type="text" id="jadwalLokasi" placeholder="Lokasi (cth: Masjid Jami' Nurah)" required>
+            <button type="submit">Simpan Jadwal</button>
+        </form>
+        <div id="jadwalList" class="item-list"></div>
+
+        <h2>Tambah Pengumuman Penting</h2>
+        <form id="pengumumanForm">
+            <input type="text" id="pengumumanJudul" placeholder="Judul (cth: Tabligh Akbar)" required>
+            <input type="text" id="pengumumanPemateri" placeholder="Pemateri (cth: Ustadz Fulan, Lc.)" required>
+            <input type="text" id="pengumumanWaktu" placeholder="Waktu (cth: Kamis, 26 Juni 2025)" required>
+            <input type="text" id="pengumumanLokasi" placeholder="Lokasi (cth: Masjid Jami' Nurah)" required>
+            <label for="pengumumanFlyer">Upload Flyer/Gambar:</label>
+            <input type="file" id="pengumumanFlyer" accept="image/*" required>
+            <button type="submit">Simpan Pengumuman</button>
+        </form>
+        <div id="loading">Mengunggah gambar, mohon tunggu...</div>
+        <div id="pengumumanList" class="item-list"></div>
+    </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // === KONFIGURASI FIREBASE (Sama seperti halaman utama) ===
+    const firebaseConfig = {
+        apiKey: "AIzaSyAowVtnXTVstFSc3kSBTm5tXJkEvp31V2Y",
+        authDomain: "streamingjbtv.firebaseapp.com",
+        databaseURL: "https://streamingjbtv-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "streamingjbtv",
+        storageBucket: "streamingjbtv.appspot.com",
+        messagingSenderId: "191301318558",
+        appId: "1:191301318558:web:f32dada7468d8a4486088f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const storage = firebase.storage();
+
+    // Referensi ke 'folder' di database
+    const jadwalRef = db.ref('jadwalKajian');
+    const pengumumanRef = db.ref('pengumuman');
+
+    // === Logika Form Jadwal Kajian ===
+    const jadwalForm = document.getElementById('jadwalForm');
+    jadwalForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const ustadzId = document.getElementById('jadwalUstadz').value;
+        const ustadzName = document.getElementById('jadwalUstadz').options[document.getElementById('jadwalUstadz').selectedIndex].text;
+        
+        jadwalRef.push({
+            ustadzId: ustadzId,
+            ustadzName: ustadzName,
+            jenis: document.getElementById('jadwalJenis').value,
+            waktu: document.getElementById('jadwalWaktu').value,
+            lokasi: document.getElementById('jadwalLokasi').value,
+        });
+        jadwalForm.reset();
+        alert('Jadwal berhasil disimpan!');
+    });
+    
+    // === Logika Form Pengumuman ===
+    const pengumumanForm = document.getElementById('pengumumanForm');
+    const loadingDiv = document.getElementById('loading');
+    pengumumanForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const file = document.getElementById('pengumumanFlyer').files[0];
+        if (!file) return;
+
+        loadingDiv.style.display = 'block'; // Tampilkan loading
+        const fileName = `${Date.now()}_${file.name}`;
+        const storageRef = storage.ref(`flyers/${fileName}`);
+        const uploadTask = storageRef.put(file);
+
+        uploadTask.on('state_changed', 
+            (snapshot) => { /* bisa untuk progress bar jika mau */ }, 
+            (error) => { 
+                console.error("Upload error:", error);
+                loadingDiv.style.display = 'none';
+                alert('Gagal mengunggah gambar!');
+            }, 
+            () => {
+                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                    pengumumanRef.push({
+                        judul: document.getElementById('pengumumanJudul').value,
+                        pemateri: document.getElementById('pengumumanPemateri').value,
+                        waktu: document.getElementById('pengumumanWaktu').value,
+                        lokasi: document.getElementById('pengumumanLokasi').value,
+                        flyerUrl: downloadURL
+                    });
+                    loadingDiv.style.display = 'none'; // Sembunyikan loading
+                    pengumumanForm.reset();
+                    alert('Pengumuman berhasil disimpan!');
+                });
+            }
+        );
+    });
+
+    // === Fungsi untuk menampilkan dan menghapus data ===
+    function renderList(ref, containerId, renderItem) {
+        const container = document.getElementById(containerId);
+        ref.on('value', (snapshot) => {
+            container.innerHTML = '';
+            if (snapshot.exists()) {
+                snapshot.forEach((childSnapshot) => {
+                    const key = childSnapshot.key;
+                    const data = childSnapshot.val();
+                    const itemElement = renderItem(key, data);
+                    container.appendChild(itemElement);
+                });
+            } else {
+                container.innerHTML = '<p>Belum ada data.</p>';
+            }
+        });
+    }
+
+    function createJadwalItem(key, data) {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+            <div class="item-details">
+                <strong>${data.ustadzName}</strong><br>
+                ${data.jenis} - ${data.waktu} di ${data.lokasi}
+            </div>
+            <button class="delete-btn" onclick="deleteItem('jadwalKajian', '${key}')">Hapus</button>
+        `;
+        return div;
+    }
+
+    function createPengumumanItem(key, data) {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+            <div class="item-details">
+                <strong>${data.judul}</strong> (${data.pemateri})<br>
+                ${data.waktu} di ${data.lokasi}
+            </div>
+            <button class="delete-btn" onclick="deleteItem('pengumuman', '${key}')">Hapus</button>
+        `;
+        return div;
+    }
+
+    renderList(jadwalRef, 'jadwalList', createJadwalItem);
+    renderList(pengumumanRef, 'pengumumanList', createPengumumanItem);
+
+    // Fungsi Hapus (ditempatkan di window agar bisa diakses onclick)
+    window.deleteItem = (refName, key) => {
+        if (confirm('Anda yakin ingin menghapus item ini?')) {
+            db.ref(refName).child(key).remove()
+              .then(() => alert('Item berhasil dihapus.'))
+              .catch((err) => alert('Gagal menghapus: ' + err.message));
+        }
+    }
+});
+</script>
+</body>
+</html>
