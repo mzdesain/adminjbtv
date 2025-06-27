@@ -6,7 +6,6 @@
     <title>Admin Panel - JBTV</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
     <style>
         body { font-family: sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
         .container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -20,12 +19,11 @@
         .item { background-color: #f9f9f9; padding: 15px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
         .item-details { flex-grow: 1; }
         .delete-btn { background-color: #e74c3c; color: white; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; }
-        #loading { display: none; text-align: center; padding: 10px; background-color: #ffc107; color: #333; border-radius: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Admi Panel JB TV</h1>
+        <h1>Admin Panel JBTV</h1>
 
         <h2>Tambah Jadwal Kajian Rutin</h2>
         <form id="jadwalForm">
@@ -36,7 +34,7 @@
                 <option value="ustad3">Ust. Ahmad Marwazi Manar, S.H., M.A.</option>
             </select>
             <input type="text" id="jadwalJenis" placeholder="Jenis Kajian (cth: Kajian Malam)" required>
-            <input type="text" id="jadwalWaktu" placeholder="Waktu (cth: Tanggal | Malam Ahad)" required>
+            <input type="text" id="jadwalWaktu" placeholder="Waktu (cth: Malam Ahad)" required>
             <input type="text" id="jadwalLokasi" placeholder="Lokasi (cth: Masjid Jami' Nurah)" required>
             <button type="submit">Simpan Jadwal</button>
         </form>
@@ -48,17 +46,17 @@
             <input type="text" id="pengumumanPemateri" placeholder="Pemateri (cth: Ustadz Fulan, Lc.)" required>
             <input type="text" id="pengumumanWaktu" placeholder="Waktu (cth: Kamis, 26 Juni 2025)" required>
             <input type="text" id="pengumumanLokasi" placeholder="Lokasi (cth: Masjid Jami' Nurah)" required>
-            <label for="pengumumanFlyer">Upload Flyer/Gambar:</label>
-            <input type="file" id="pengumumanFlyer" accept="image/*" required>
+            
+            <input type="url" id="pengumumanFlyerUrl" placeholder="Tempel URL Langsung (Direct Link) gambar di sini" required>
+            
             <button type="submit">Simpan Pengumuman</button>
         </form>
-        <div id="loading">Mengunggah gambar, mohon tunggu...</div>
         <div id="pengumumanList" class="item-list"></div>
     </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // === KONFIGURASI FIREBASE (Sama seperti halaman utama) ===
+    // === KONFIGURASI FIREBASE ===
     const firebaseConfig = {
         apiKey: "AIzaSyAowVtnXTVstFSc3kSBTm5tXJkEvp31V2Y",
         authDomain: "streamingjbtv.firebaseapp.com",
@@ -70,13 +68,14 @@ document.addEventListener("DOMContentLoaded", function () {
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const storage = firebase.storage();
+    
+    // Tidak perlu inisialisasi storage lagi
+    // const storage = firebase.storage(); 
 
-    // Referensi ke 'folder' di database
     const jadwalRef = db.ref('jadwalKajian');
     const pengumumanRef = db.ref('pengumuman');
 
-    // === Logika Form Jadwal Kajian ===
+    // === Logika Form Jadwal Kajian (Tidak Berubah) ===
     const jadwalForm = document.getElementById('jadwalForm');
     jadwalForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -94,45 +93,28 @@ document.addEventListener("DOMContentLoaded", function () {
         alert('Jadwal berhasil disimpan!');
     });
     
-    // === Logika Form Pengumuman ===
+    // === Logika Form Pengumuman (INI YANG DIUBAH) ===
     const pengumumanForm = document.getElementById('pengumumanForm');
-    const loadingDiv = document.getElementById('loading');
     pengumumanForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        const file = document.getElementById('pengumumanFlyer').files[0];
-        if (!file) return;
+        // Langsung ambil URL dari input teks
+        const flyerUrl = document.getElementById('pengumumanFlyerUrl').value;
 
-        loadingDiv.style.display = 'block'; // Tampilkan loading
-        const fileName = `${Date.now()}_${file.name}`;
-        const storageRef = storage.ref(`flyers/${fileName}`);
-        const uploadTask = storageRef.put(file);
-
-        uploadTask.on('state_changed', 
-            (snapshot) => { /* bisa untuk progress bar jika mau */ }, 
-            (error) => { 
-                console.error("Upload error:", error);
-                loadingDiv.style.display = 'none';
-                alert('Gagal mengunggah gambar!');
-            }, 
-            () => {
-                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                    pengumumanRef.push({
-                        judul: document.getElementById('pengumumanJudul').value,
-                        pemateri: document.getElementById('pengumumanPemateri').value,
-                        waktu: document.getElementById('pengumumanWaktu').value,
-                        lokasi: document.getElementById('pengumumanLokasi').value,
-                        flyerUrl: downloadURL
-                    });
-                    loadingDiv.style.display = 'none'; // Sembunyikan loading
-                    pengumumanForm.reset();
-                    alert('Pengumuman berhasil disimpan!');
-                });
-            }
-        );
+        // Simpan data ke database
+        pengumumanRef.push({
+            judul: document.getElementById('pengumumanJudul').value,
+            pemateri: document.getElementById('pengumumanPemateri').value,
+            waktu: document.getElementById('pengumumanWaktu').value,
+            lokasi: document.getElementById('pengumumanLokasi').value,
+            flyerUrl: flyerUrl // Simpan URL yang di-paste
+        });
+        
+        pengumumanForm.reset();
+        alert('Pengumuman berhasil disimpan!');
     });
 
-    // === Fungsi untuk menampilkan dan menghapus data ===
+    // === Fungsi untuk menampilkan dan menghapus data (Tidak berubah) ===
     function renderList(ref, containerId, renderItem) {
         const container = document.getElementById(containerId);
         ref.on('value', (snapshot) => {
@@ -179,7 +161,6 @@ document.addEventListener("DOMContentLoaded", function () {
     renderList(jadwalRef, 'jadwalList', createJadwalItem);
     renderList(pengumumanRef, 'pengumumanList', createPengumumanItem);
 
-    // Fungsi Hapus (ditempatkan di window agar bisa diakses onclick)
     window.deleteItem = (refName, key) => {
         if (confirm('Anda yakin ingin menghapus item ini?')) {
             db.ref(refName).child(key).remove()
