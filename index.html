@@ -29,14 +29,7 @@
     <div class="container">
         <h1>Admin JB TV</h1>
 
-        <h4>Kelola Video Kajian Singkat</h4>
-        <form id="reelsForm">
-            <input type="text" id="reelsTitleInput" placeholder="Masukkan Judul Video di sini" required>
-            <textarea id="reelsEmbedInput" placeholder="Tempel KODE EMBED Iframe dari YouTube di sini" required></textarea>
-            <button type="submit" class="add-video-btn">Tambah Video</button>
-        </form>
-        <div id="reelsList" class="item-list"></div>
-
+        
         <h4>Kelola Tanggal Kajian Pekan Ini</h4>
         <form id="tanggalForm">
             <p class="current-value">Saat ini: <strong id="currentTanggalText">Memuat...</strong></p>
@@ -70,6 +63,15 @@
         </form>
         <div id="pengumumanList" class="item-list"></div>
     </div>
+    
+    <h4>Kelola Video Kajian Singkat</h4>
+        <form id="reelsForm">
+            <input type="text" id="reelsTitleInput" placeholder="Masukkan Judul Video di sini" required>
+            <textarea id="reelsEmbedInput" placeholder="Tempel KODE EMBED Iframe dari YouTube di sini" required></textarea>
+            <button type="submit" class="add-video-btn">Tambah Video</button>
+        </form>
+        <div id="reelsList" class="item-list"></div>
+
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
