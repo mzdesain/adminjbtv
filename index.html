@@ -7,34 +7,37 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <style>
-        body { font-family: sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
         .container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1, h4 { color: #114ed7; text-align: center; }
-        h4 { border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; }
-        form { display: flex; flex-direction: column; gap: 15px; }
-        input, select, button { padding: 12px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; }
-        button { background-color: #114ed7; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #0038a3; }
-        .item-list { margin-top: 20px; }
-        .item { background-color: #f9f9f9; padding: 15px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .item-details { flex-grow: 1; }
-        .delete-btn { background-color: #e74c3c; color: white; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; }
-        .current-value { font-style: italic; color: #555; text-align: center; margin-bottom: 15px; }
+        h1, h4, h5 { color: #114ed7; text-align: center; }
+        h4 { border-top: 2px solid #e0e0e0; padding-top: 20px; margin-top: 30px; }
+        h5 { margin: 10px 0 5px 0; padding: 0; color: #333; }
+        form { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+        input, select, button, textarea { padding: 12px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; font-family: sans-serif; }
+        textarea { height: 120px; resize: vertical; font-family: monospace; color: #333; }
+        button { background-color: #114ed7; color: white; border: none; cursor: pointer; font-weight: bold; transition: opacity 0.2s; }
+        button.add-video-btn { background-color: #e71d43; }
+        button:hover { opacity: 0.9; }
+        .item-list { margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }
+        .item { background-color: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .item-details { flex-grow: 1; word-break: break-all; font-size: 0.9em; background: #eee; padding: 8px; border-radius: 4px; }
+        .item-details.embed-code { font-family: monospace; white-space: pre-wrap; }
+        .delete-btn { background-color: #e74c3c; color: white; padding: 8px 12px; font-size: 0.9em; border-radius: 5px; flex-shrink: 0; }
+        .current-value { font-style: italic; color: #555; text-align: center; margin-bottom: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Admin JB TV</h1>
 
-        <h4>Masukkan Tanggal Kajian Pekan Ini</h4>
+        <h4>Kelola Tanggal Kajian Pekan Ini</h4>
         <form id="tanggalForm">
             <p class="current-value">Saat ini: <strong id="currentTanggalText">Memuat...</strong></p>
             <input type="text" id="tanggalText" placeholder="Contoh: Jadwal Kajian, 2 Juli - 8 Juli 2025" required>
-            <button type="submit">Update</button>
+            <button type="submit">Update Tanggal</button>
         </form>
 
-
-        <h4>Jadwal Kajian Rutin</h4>
+        <h4>Kelola Jadwal Kajian Rutin</h4>
         <form id="jadwalForm">
             <select id="jadwalUstadz" required>
                 <option value="">-- Pilih Ustadz --</option>
@@ -48,8 +51,8 @@
             <button type="submit">Simpan</button>
         </form>
         <div id="jadwalList" class="item-list"></div>
-        
-        <h4>Pengumuman Penting</h4>
+
+        <h4>Kelola Pengumuman Penting</h4>
         <form id="pengumumanForm">
             <input type="text" id="pengumumanJudul" placeholder="Judul (cth: Tabligh Akbar)" required>
             <input type="text" id="pengumumanPemateri" placeholder="Pemateri (cth: Ustadz Fulan, Lc.)" required>
@@ -60,144 +63,151 @@
         </form>
         <div id="pengumumanList" class="item-list"></div>
     </div>
+    
+    <h4>Kelola Video Kajian Singkat</h4>
+        <form id="reelsForm">
+            <textarea id="reelsEmbedInput" placeholder="Tempel KODE EMBED Iframe dari YouTube di sini" required></textarea>
+            <button type="submit" class="add-video-btn">Tambah Video</button>
+        </form>
+        <div id="reelsList" class="item-list"></div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    // === KONFIGURASI FIREBASE ===
-    const firebaseConfig = {
-        apiKey: "AIzaSyAowVtnXTVstFSc3kSBTm5tXJkEvp31V2Y",
-        authDomain: "streamingjbtv.firebaseapp.com",
-        databaseURL: "https://streamingjbtv-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "streamingjbtv",
-        storageBucket: "streamingjbtv.appspot.com",
-        messagingSenderId: "191301318558",
-        appId: "1:191301318558:web:f32dada7468d8a4486088f"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    
-    // Referensi ke 'folder' di database
-    const tanggalRef = db.ref('infoSitus/rentangTanggal'); // path baru untuk tanggal
-    const jadwalRef = db.ref('jadwalKajian');
-    const pengumumanRef = db.ref('pengumuman');
-    
-    // === Logika Form Rentang Tanggal (INI YANG BARU) ===
-    const tanggalForm = document.getElementById('tanggalForm');
-    const tanggalInput = document.getElementById('tanggalText');
-    const currentTanggalText = document.getElementById('currentTanggalText');
-    
-    // 1. Tampilkan nilai yang ada di database saat ini
-    tanggalRef.on('value', (snapshot) => {
-        if (snapshot.exists()) {
-            currentTanggalText.textContent = snapshot.val();
-        } else {
-            currentTanggalText.textContent = 'Belum diatur';
-        }
-    });
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const firebaseConfig = {
+                apiKey: "AIzaSyAowVtnXTVstFSc3kSBTm5tXJkEvp31V2Y",
+                authDomain: "streamingjbtv.firebaseapp.com",
+                databaseURL: "https://streamingjbtv-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "streamingjbtv",
+                storageBucket: "streamingjbtv.appspot.com",
+                messagingSenderId: "191301318558",
+                appId: "1:191301318558:web:f32dada7468d8a4486088f"
+            };
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
 
-    // 2. Simpan nilai baru ke database saat form di-submit
-    tanggalForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const newTanggalValue = tanggalInput.value;
-        tanggalRef.set(newTanggalValue)
-            .then(() => {
-                alert('Rentang tanggal berhasil diupdate!');
-                tanggalForm.reset();
-            })
-            .catch((error) => {
-                alert('Gagal mengupdate: ' + error.message);
+            // --- Logika untuk Video (Fitur Baru) ---
+            const reelsRef = db.ref('youtubeReels');
+            const reelsForm = document.getElementById('reelsForm');
+            const reelsEmbedInput = document.getElementById('reelsEmbedInput');
+            const reelsListContainer = document.getElementById('reelsList');
+
+            reelsForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const embedCode = reelsEmbedInput.value.trim();
+                if (embedCode.startsWith("<iframe") && embedCode.endsWith(">")) {
+                    reelsRef.push({ embedCode: embedCode })
+                        .then(() => { alert('Video berhasil ditambahkan!'); reelsForm.reset(); })
+                        .catch(err => alert('Gagal: ' + err.message));
+                } else {
+                    alert("Input tidak valid. Harap tempel kode embed yang diawali dengan <iframe ...>");
+                }
             });
-    });
 
-    // === Logika Form Jadwal Kajian (Tidak Berubah) ===
-    const jadwalForm = document.getElementById('jadwalForm');
-    jadwalForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const ustadzId = document.getElementById('jadwalUstadz').value;
-        const ustadzName = document.getElementById('jadwalUstadz').options[document.getElementById('jadwalUstadz').selectedIndex].text;
-        
-        jadwalRef.push({
-            ustadzId: ustadzId,
-            ustadzName: ustadzName,
-            jenis: document.getElementById('jadwalJenis').value,
-            waktu: document.getElementById('jadwalWaktu').value,
-            lokasi: document.getElementById('jadwalLokasi').value,
-        });
-        jadwalForm.reset();
-        alert('Jadwal berhasil disimpan!');
-    });
-    
-    // === Logika Form Pengumuman (Tidak Berubah) ===
-    const pengumumanForm = document.getElementById('pengumumanForm');
-    pengumumanForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const flyerUrl = document.getElementById('pengumumanFlyerUrl').value;
-        pengumumanRef.push({
-            judul: document.getElementById('pengumumanJudul').value,
-            pemateri: document.getElementById('pengumumanPemateri').value,
-            waktu: document.getElementById('pengumumanWaktu').value,
-            lokasi: document.getElementById('pengumumanLokasi').value,
-            flyerUrl: flyerUrl
-        });
-        pengumumanForm.reset();
-        alert('Pengumuman berhasil disimpan!');
-    });
+            reelsRef.on('value', (snapshot) => {
+                reelsListContainer.innerHTML = '<h5>Daftar Video Tersimpan</h5>';
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const key = childSnapshot.key;
+                        const data = childSnapshot.val();
+                        const itemElement = document.createElement('div');
+                        itemElement.className = 'item';
+                        
+                        const detailsDiv = document.createElement('div');
+                        detailsDiv.className = 'item-details embed-code';
+                        detailsDiv.textContent = data.embedCode; // Cara aman menampilkan kode
 
-    // === Fungsi untuk menampilkan dan menghapus data (Tidak berubah) ===
-    function renderList(ref, containerId, renderItem) {
-        const container = document.getElementById(containerId);
-        ref.on('value', (snapshot) => {
-            container.innerHTML = '';
-            if (snapshot.exists()) {
-                snapshot.forEach((childSnapshot) => {
-                    const key = childSnapshot.key;
-                    const data = childSnapshot.val();
-                    const itemElement = renderItem(key, data);
-                    container.appendChild(itemElement);
+                        const deleteButton = document.createElement('button');
+                        deleteButton.className = 'delete-btn';
+                        deleteButton.textContent = 'Hapus';
+                        deleteButton.onclick = function() { deleteReel(key); };
+
+                        itemElement.appendChild(detailsDiv);
+                        itemElement.appendChild(deleteButton);
+                        reelsListContainer.appendChild(itemElement);
+                    });
+                } else {
+                    reelsListContainer.innerHTML += '<p>Belum ada video yang ditambahkan.</p>';
+                }
+            });
+            window.deleteReel = (key) => {
+                if(confirm('Yakin ingin menghapus kode embed ini?')) { reelsRef.child(key).remove(); }
+            };
+
+            // --- Logika untuk Fitur Lama (Tanggal, Jadwal, Pengumuman) ---
+            const tanggalRef = db.ref('infoSitus/rentangTanggal');
+            const jadwalRef = db.ref('jadwalKajian');
+            const pengumumanRef = db.ref('pengumuman');
+            
+            const tanggalForm = document.getElementById('tanggalForm');
+            const jadwalForm = document.getElementById('jadwalForm');
+            const pengumumanForm = document.getElementById('pengumumanForm');
+
+            const currentTanggalText = document.getElementById('currentTanggalText');
+            tanggalRef.on('value', (s) => { currentTanggalText.textContent = s.exists() ? s.val() : 'Belum diatur'; });
+            tanggalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                db.ref('infoSitus/rentangTanggal').set(document.getElementById('tanggalText').value);
+                alert('Tanggal berhasil diupdate!');
+                tanggalForm.reset();
+            });
+
+            jadwalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                jadwalRef.push({
+                    ustadzId: document.getElementById('jadwalUstadz').value,
+                    ustadzName: document.getElementById('jadwalUstadz').options[document.getElementById('jadwalUstadz').selectedIndex].text,
+                    jenis: document.getElementById('jadwalJenis').value,
+                    waktu: document.getElementById('jadwalWaktu').value,
+                    lokasi: document.getElementById('jadwalLokasi').value,
                 });
-            } else {
-                container.innerHTML = '<p>Belum ada data.</p>';
+                alert('Jadwal berhasil disimpan!');
+                jadwalForm.reset();
+            });
+
+            pengumumanForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                pengumumanRef.push({
+                    judul: document.getElementById('pengumumanJudul').value,
+                    pemateri: document.getElementById('pengumumanPemateri').value,
+                    waktu: document.getElementById('pengumumanWaktu').value,
+                    lokasi: document.getElementById('pengumumanLokasi').value,
+                    flyerUrl: document.getElementById('pengumumanFlyerUrl').value
+                });
+                alert('Pengumuman berhasil disimpan!');
+                pengumumanForm.reset();
+            });
+            
+            function renderList(ref, containerId, createItemFunc) {
+                const container = document.getElementById(containerId);
+                ref.on('value', (snapshot) => {
+                    container.innerHTML = '';
+                    if (snapshot.exists()) {
+                        snapshot.forEach((child) => {
+                            container.appendChild(createItemFunc(child.key, child.val()));
+                        });
+                    } else {
+                        container.innerHTML = '<p>Belum ada data.</p>';
+                    }
+                });
             }
+            
+            window.deleteItem = (refName, key) => {
+                if (confirm('Yakin ingin menghapus item ini?')) { db.ref(refName).child(key).remove(); }
+            }
+            
+            renderList(jadwalRef, 'jadwalList', (key, data) => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML = `<div class="item-details"><strong>${data.ustadzName}</strong><br>${data.jenis} - ${data.waktu} di ${data.lokasi}</div><button class="delete-btn" onclick="deleteItem('jadwalKajian', '${key}')">Hapus</button>`;
+                return div;
+            });
+            renderList(pengumumanRef, 'pengumumanList', (key, data) => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML = `<div class="item-details"><strong>${data.judul}</strong> (${data.pemateri})<br>${data.waktu} di ${data.lokasi}</div><button class="delete-btn" onclick="deleteItem('pengumuman', '${key}')">Hapus</button>`;
+                return div;
+            });
         });
-    }
-
-    function createJadwalItem(key, data) {
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML = `
-            <div class="item-details">
-                <strong>${data.ustadzName}</strong><br>
-                ${data.jenis} - ${data.waktu} di ${data.lokasi}
-            </div>
-            <button class="delete-btn" onclick="deleteItem('jadwalKajian', '${key}')">Hapus</button>
-        `;
-        return div;
-    }
-
-    function createPengumumanItem(key, data) {
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML = `
-            <div class="item-details">
-                <strong>${data.judul}</strong> (${data.pemateri})<br>
-                ${data.waktu} di ${data.lokasi}
-            </div>
-            <button class="delete-btn" onclick="deleteItem('pengumuman', '${key}')">Hapus</button>
-        `;
-        return div;
-    }
-
-    renderList(jadwalRef, 'jadwalList', createJadwalItem);
-    renderList(pengumumanRef, 'pengumumanList', createPengumumanItem);
-
-    window.deleteItem = (refName, key) => {
-        if (confirm('Anda yakin ingin menghapus item ini?')) {
-            db.ref(refName).child(key).remove()
-              .then(() => alert('Item berhasil dihapus.'))
-              .catch((err) => alert('Gagal menghapus: ' + err.message));
-        }
-    }
-});
-</script>
+    </script>
 </body>
 </html>
