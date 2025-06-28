@@ -20,7 +20,7 @@
         button:hover { opacity: 0.9; }
         .item-list { margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }
         .item { background-color: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .item-details { flex-grow: 1; word-break: break-all; font-size: 1em; }
+        .item-details { flex-grow: 1; word-break: break-all; font-size: 1em; font-weight: 500; }
         .delete-btn { background-color: #e74c3c; color: white; padding: 8px 12px; font-size: 0.9em; border-radius: 5px; flex-shrink: 0; }
         .current-value { font-style: italic; color: #555; text-align: center; margin-bottom: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 5px; }
     </style>
@@ -29,7 +29,14 @@
     <div class="container">
         <h1>Admin JB TV</h1>
 
-        
+        <h4>Kelola Video Kajian Singkat</h4>
+        <form id="reelsForm">
+            <input type="text" id="reelsTitleInput" placeholder="Masukkan Judul Video di sini" required>
+            <textarea id="reelsEmbedInput" placeholder="Tempel KODE EMBED Iframe dari Vimeo di sini" required></textarea>
+            <button type="submit" class="add-video-btn">Tambah Video</button>
+        </form>
+        <div id="reelsList" class="item-list"></div>
+
         <h4>Kelola Tanggal Kajian Pekan Ini</h4>
         <form id="tanggalForm">
             <p class="current-value">Saat ini: <strong id="currentTanggalText">Memuat...</strong></p>
@@ -63,15 +70,6 @@
         </form>
         <div id="pengumumanList" class="item-list"></div>
     </div>
-    
-    <h4>Kelola Video Kajian Singkat</h4>
-        <form id="reelsForm">
-            <input type="text" id="reelsTitleInput" placeholder="Masukkan Judul Video di sini" required>
-            <textarea id="reelsEmbedInput" placeholder="Tempel KODE EMBED Iframe dari YouTube di sini" required></textarea>
-            <button type="submit" class="add-video-btn">Tambah Video</button>
-        </form>
-        <div id="reelsList" class="item-list"></div>
-
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -92,111 +90,46 @@
                 form.addEventListener('submit', (e) => {
                     e.preventDefault();
                     const data = getDataFunc();
-                    if(data) {
-                        ref.push(data).then(() => {
-                            alert('Data berhasil disimpan!');
-                            form.reset();
-                        }).catch(err => alert('Gagal: ' + err.message));
-                    }
+                    if(data) ref.push(data).then(() => { alert('Data berhasil disimpan!'); form.reset(); }).catch(err => alert('Gagal: ' + err.message));
                 });
             }
-            
             function setupList(ref, containerId, createItemFunc) {
                 const container = document.getElementById(containerId);
                 ref.on('value', (snapshot) => {
-                    container.innerHTML = '';
-                    if (snapshot.exists()) {
-                        snapshot.forEach((child) => {
-                            container.appendChild(createItemFunc(child.key, child.val()));
-                        });
-                    } else {
-                        container.innerHTML = '<p>Belum ada data.</p>';
-                    }
+                    container.innerHTML = `<h5>Daftar Tersimpan</h5>`;
+                    if (snapshot.exists()) snapshot.forEach((child) => container.appendChild(createItemFunc(child.key, child.val())));
+                    else container.innerHTML += '<p>Belum ada data.</p>';
                 });
             }
 
             // Inisialisasi Kelola Video
-            const reelsRef = db.ref('youtubeReels');
-            setupForm('reelsForm', reelsRef, () => {
+            setupForm('reelsForm', db.ref('youtubeReels'), () => {
                 const title = document.getElementById('reelsTitleInput').value.trim();
                 const embedCode = document.getElementById('reelsEmbedInput').value.trim();
-                if (embedCode.startsWith("<iframe") && embedCode.endsWith(">") && title) {
-                    return { title, embedCode };
-                }
-                alert("Input tidak valid. Judul dan Kode Embed Wajib diisi.");
-                return null;
+                if (embedCode.startsWith("<iframe") && title) return { title, embedCode };
+                alert("Input tidak valid. Judul dan Kode Embed Wajib diisi."); return null;
             });
-            // PERBAIKAN DI SINI: Hanya menampilkan judul di daftar
-            setupList(reelsRef, 'reelsList', (key, data) => {
+            setupList(db.ref('youtubeReels'), 'reelsList', (key, data) => {
                 const item = document.createElement('div');
                 item.className = 'item';
-                const itemDetails = document.createElement('div');
-                itemDetails.className = 'item-details';
-                itemDetails.innerHTML = `<strong>${data.title}</strong>`; // HANYA TAMPILKAN JUDUL
-                
+                item.innerHTML = `<div class="item-details"><strong>${data.title}</strong></div>`;
                 const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-btn';
-                deleteBtn.textContent = 'Hapus';
-                deleteBtn.addEventListener('click', () => {
-                    if(confirm('Yakin ingin menghapus video ini?')) reelsRef.child(key).remove();
-                });
-                item.appendChild(itemDetails);
+                deleteBtn.className = 'delete-btn'; deleteBtn.textContent = 'Hapus';
+                deleteBtn.addEventListener('click', () => { if(confirm(`Yakin hapus video "${data.title}"?`)) db.ref('youtubeReels').child(key).remove(); });
                 item.appendChild(deleteBtn);
                 return item;
             });
 
-            // Inisialisasi Kelola Tanggal
+            // Inisialisasi Kelola Tanggal, Jadwal, Pengumuman (TIDAK BERUBAH)
             const tanggalRef = db.ref('infoSitus/rentangTanggal');
-            document.getElementById('tanggalForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                tanggalRef.set(document.getElementById('tanggalText').value).then(() => {
-                    alert('Tanggal berhasil diupdate!');
-                    document.getElementById('tanggalForm').reset();
-                });
-            });
+            document.getElementById('tanggalForm').addEventListener('submit', (e) => { e.preventDefault(); tanggalRef.set(document.getElementById('tanggalText').value).then(() => { alert('Tanggal berhasil diupdate!'); document.getElementById('tanggalForm').reset(); }); });
             tanggalRef.on('value', (s) => { document.getElementById('currentTanggalText').textContent = s.exists() ? s.val() : 'Belum diatur'; });
-
-            // Inisialisasi Kelola Jadwal
             const jadwalRef = db.ref('jadwalKajian');
-            setupForm('jadwalForm', jadwalRef, () => ({
-                ustadzId: document.getElementById('jadwalUstadz').value,
-                ustadzName: document.getElementById('jadwalUstadz').options[document.getElementById('jadwalUstadz').selectedIndex].text,
-                jenis: document.getElementById('jadwalJenis').value,
-                waktu: document.getElementById('jadwalWaktu').value,
-                lokasi: document.getElementById('jadwalLokasi').value,
-            }));
-            setupList(jadwalRef, 'jadwalList', (key, data) => {
-                const item = document.createElement('div');
-                item.className = 'item';
-                item.innerHTML = `<div class="item-details"><strong>${data.ustadzName}</strong><br>${data.jenis} - ${data.waktu} di ${data.lokasi}</div>`;
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-btn';
-                deleteBtn.textContent = 'Hapus';
-                deleteBtn.addEventListener('click', () => { if (confirm('Yakin?')) jadwalRef.child(key).remove(); });
-                item.appendChild(deleteBtn);
-                return item;
-            });
-
-            // Inisialisasi Kelola Pengumuman
+            setupForm('jadwalForm', jadwalRef, () => ({ ustadzId: document.getElementById('jadwalUstadz').value, ustadzName: document.getElementById('jadwalUstadz').options[document.getElementById('jadwalUstadz').selectedIndex].text, jenis: document.getElementById('jadwalJenis').value, waktu: document.getElementById('jadwalWaktu').value, lokasi: document.getElementById('jadwalLokasi').value, }));
+            setupList(jadwalRef, 'jadwalList', (key, data) => { const item = document.createElement('div'); item.className = 'item'; item.innerHTML = `<div class="item-details"><strong>${data.ustadzName}</strong><br>${data.jenis} - ${data.waktu} di ${data.lokasi}</div>`; const btn = document.createElement('button'); btn.className = 'delete-btn'; btn.textContent = 'Hapus'; btn.addEventListener('click', () => { if (confirm('Yakin?')) jadwalRef.child(key).remove(); }); item.appendChild(btn); return item; });
             const pengumumanRef = db.ref('pengumuman');
-            setupForm('pengumumanForm', pengumumanRef, () => ({
-                judul: document.getElementById('pengumumanJudul').value,
-                pemateri: document.getElementById('pengumumanPemateri').value,
-                waktu: document.getElementById('pengumumanWaktu').value,
-                lokasi: document.getElementById('pengumumanLokasi').value,
-                flyerUrl: document.getElementById('pengumumanFlyerUrl').value
-            }));
-            setupList(pengumumanRef, 'pengumumanList', (key, data) => {
-                const item = document.createElement('div');
-                item.className = 'item';
-                item.innerHTML = `<div class="item-details"><strong>${data.judul}</strong> (${data.pemateri})<br>${data.waktu} di ${data.lokasi}</div>`;
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'delete-btn';
-                deleteBtn.textContent = 'Hapus';
-                deleteBtn.addEventListener('click', () => { if (confirm('Yakin?')) pengumumanRef.child(key).remove(); });
-                item.appendChild(deleteBtn);
-                return item;
-            });
+            setupForm('pengumumanForm', pengumumanRef, () => ({ judul: document.getElementById('pengumumanJudul').value, pemateri: document.getElementById('pengumumanPemateri').value, waktu: document.getElementById('pengumumanWaktu').value, lokasi: document.getElementById('pengumumanLokasi').value, flyerUrl: document.getElementById('pengumumanFlyerUrl').value }));
+            setupList(pengumumanRef, 'pengumumanList', (key, data) => { const item = document.createElement('div'); item.className = 'item'; item.innerHTML = `<div class="item-details"><strong>${data.judul}</strong> (${data.pemateri})<br>${data.waktu} di ${data.lokasi}</div>`; const btn = document.createElement('button'); btn.className = 'delete-btn'; btn.textContent = 'Hapus'; btn.addEventListener('click', () => { if (confirm('Yakin?')) pengumumanRef.child(key).remove(); }); item.appendChild(btn); return item; });
         });
     </script>
 </body>
