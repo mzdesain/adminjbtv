@@ -322,28 +322,59 @@
             const articleTitleFieldForQuestion = document.getElementById('articleTitle');
             const articleContentFieldForQuestion = document.getElementById('articleContent');
 
-            questionsRef.orderByChild('timestamp').on('value', (snapshot) => {
-                questionListContainer.innerHTML = ''; 
-                if (snapshot.exists()) {
-                    const questions = [];
-                    snapshot.forEach(child => questions.push({ key: child.key, ...child.val() }));
-                    questions.reverse().forEach(data => {
-                        const date = new Date(data.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
-                        const item = document.createElement('div');
-                        item.className = 'item';
-                        item.innerHTML = `
-                            <div class="item-header"><div class="question-meta">Dari: <strong>${data.nama}</strong> | ${date}</div></div>
-                            <div class="question-text">${data.pertanyaan}</div>
-                            <div class="action-btn-group">
-                                <button class="btn-make-article" data-key="${data.key}"><i class="fa-solid fa-file-circle-plus"></i> Jadikan Artikel</button>
-                                <button class="delete-btn" data-key="${data.key}"><i class="fa-solid fa-trash"></i> Hapus</button>
-                            </div>`;
-                        questionListContainer.appendChild(item);
-                    });
-                } else {
-                    questionListContainer.innerHTML = '<p>Belum ada pertanyaan yang masuk.</p>';
-                }
-            });
+questionsRef.orderByChild('timestamp').on('value', (snapshot) => {
+    questionListContainer.innerHTML = '<h5>Daftar Pertanyaan Terbaru</h5>';
+    if (snapshot.exists()) {
+        const questions = [];
+        snapshot.forEach(child => {
+            questions.push({ key: child.key, ...child.val() });
+        });
+        
+        questions.reverse(); // Agar yang terbaru tampil di atas
+
+        questions.forEach(data => {
+            const item = document.createElement('div');
+            item.className = 'item simple-item'; // Menggunakan style yang sama dengan jadwal
+            
+            // Membuat elemen detail pertanyaan
+            const details = document.createElement('div');
+            details.className = 'item-details';
+            // Memotong teks pertanyaan jika terlalu panjang agar tidak merusak layout
+            const snippet = data.pertanyaan.length > 80 ? data.pertanyaan.substring(0, 80) + '...' : data.pertanyaan;
+            details.innerHTML = `<strong>${data.nama}</strong>: ${snippet}`;
+            
+            // Membuat kontainer untuk tombol-tombol aksi
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'btn-container'; // Menggunakan style yang sama
+
+            // Tombol "Jadikan Artikel"
+            const makeArticleBtn = document.createElement('button');
+            makeArticleBtn.className = 'btn-make-article';
+            makeArticleBtn.innerHTML = '<i class="fa-solid fa-file-circle-plus"></i>';
+            makeArticleBtn.title = 'Jadikan Artikel';
+            makeArticleBtn.dataset.key = data.key;
+
+            // Tombol "Hapus"
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+            deleteBtn.title = 'Hapus';
+            deleteBtn.dataset.key = data.key;
+            
+            // Menggabungkan semua tombol ke dalam kontainer tombol
+            btnContainer.appendChild(makeArticleBtn);
+            btnContainer.appendChild(deleteBtn);
+
+            // Menggabungkan detail dan tombol ke dalam item utama
+            item.appendChild(details);
+            item.appendChild(btnContainer);
+            
+            questionListContainer.appendChild(item);
+        });
+    } else {
+        questionListContainer.innerHTML += '<p>Belum ada pertanyaan yang masuk.</p>';
+    }
+});
 
             questionListContainer.addEventListener('click', (e) => {
                 const button = e.target.closest('button');
