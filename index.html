@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,23 +8,170 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: #114ed7; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1, h4, h5 { color: #114ed7; text-align: center; }
-        h4 { border-top: 2px solid #e0e0e0; padding-top: 20px; margin-top: 30px; }
-        h5 { margin: 10px 0 5px 0; padding: 0; color: #333; text-align: left;}
-        form { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
-        input, select, button, textarea { padding: 12px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; font-family: sans-serif; }
-        textarea { height: 120px; resize: vertical; font-family: monospace; color: #333; }
-        button { background-color: #114ed7; color: white; border: none; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
-        button:hover { opacity: 0.9; }
-        .item-list { margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }
-        .item { background-color: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .item-details { flex-grow: 1; word-break: break-all; font-size: 1em; font-weight: 500; }
-        .delete-btn { background-color: #e74c3c; color: white; padding: 8px 12px; font-size: 0.9em; border-radius: 5px; flex-shrink: 0; border: none; cursor: pointer; }
-        .current-value { font-style: italic; color: #555; text-align: center; margin-bottom: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 5px; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: #114ed7;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h4,
+        h5 {
+            color: #114ed7;
+            text-align: center;
+        }
+
+        h4 {
+            border-top: 2px solid #e0e0e0;
+            padding-top: 20px;
+            margin-top: 30px;
+        }
+
+        h5 {
+            margin: 10px 0 5px 0;
+            padding: 0;
+            color: #333;
+            text-align: left;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input,
+        select,
+        button,
+        textarea {
+            padding: 12px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-family: sans-serif;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+            font-family: monospace;
+            color: #333;
+        }
+
+        button {
+            background-color: #114ed7;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .item-list {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .item-details {
+            flex-grow: 1;
+            word-break: break-all;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            border-radius: 5px;
+            flex-shrink: 0;
+            border: none;
+            cursor: pointer;
+        }
+
+        .current-value {
+            font-style: italic;
+            color: #555;
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        /* === CSS BARU UNTUK DAFTAR PERTANYAAN === */
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.question-meta {
+    font-size: 0.85em;
+    color: #555;
+}
+.question-text {
+    font-weight: 500;
+    margin-top: 5px;
+    white-space: pre-wrap; /* Agar format baris baru terjaga */
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #eee;
+}
+.action-btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+.action-btn-group button {
+    padding: 8px 12px;
+    font-size: 0.9em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.btn-make-article {
+    background-color: #28a745; /* Hijau */
+}
+/* === AKHIR CSS BARU === */
+        
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Admin JB TV</h1>
@@ -60,6 +208,9 @@
             <button type="submit">Simpan Pengumuman</button>
         </form>
         <div id="pengumumanList" class="item-list"></div>
+        
+        <h4><i class="fa-solid fa-inbox"></i> Pertanyaan Masuk dari Pengunjung</h4>
+<div id="questionList" class="item-list"></div>
 
         <h4>Kelola Artikel Tanya Jawab</h4>
         <form id="articleForm">
@@ -69,7 +220,7 @@
             <button type="submit" id="articleSubmitBtn">Simpan Artikel Baru</button>
         </form>
         <div id="articleList" class="item-list"></div>
-        </div>
+    </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -84,6 +235,68 @@
             };
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
+            
+            // --- KELOLA PERTANYAAN MASUK ---
+const questionsRef = db.ref('pertanyaanMasuk');
+const questionListContainer = document.getElementById('questionList');
+
+questionsRef.orderByChild('timestamp').on('value', (snapshot) => {
+    questionListContainer.innerHTML = '';
+    if (snapshot.exists()) {
+        const questions = [];
+        snapshot.forEach(child => questions.push({
+            key: child.key,
+            ...child.val()
+        }));
+        questions.reverse().forEach(data => {
+            const date = new Date(data.timestamp).toLocaleString('id-ID', {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+            });
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.innerHTML = `
+                <div class="item-header">
+                    <div class="question-meta">Dari: <strong>${data.nama}</strong> | ${date}</div>
+                </div>
+                <div class="question-text">${data.pertanyaan}</div>
+                <div class="action-btn-group">
+                    <button class="btn-make-article" data-key="${data.key}"><i class="fa-solid fa-file-circle-plus"></i> Jadikan Artikel</button>
+                    <button class="delete-btn" data-key="${data.key}"><i class="fa-solid fa-trash"></i> Hapus</button>
+                </div>`;
+            questionListContainer.appendChild(item);
+        });
+    } else {
+        questionListContainer.innerHTML = '<p>Belum ada pertanyaan yang masuk.</p>';
+    }
+});
+
+questionListContainer.addEventListener('click', (e) => {
+    const button = e.target.closest('button');
+    if (!button) return;
+    const key = button.dataset.key;
+
+    if (button.classList.contains('delete-btn')) {
+        if (confirm('Anda yakin ingin menghapus pertanyaan ini?')) {
+            questionsRef.child(key).remove();
+        }
+    }
+    if (button.classList.contains('btn-make-article')) {
+        const articleForm = document.getElementById('articleForm');
+        const articleTitleField = document.getElementById('articleTitle');
+        const articleContentField = document.getElementById('articleContent');
+        
+        questionsRef.child(key).once('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                articleTitleField.value = data.pertanyaan;
+                articleContentField.value = `Pertanyaan dari: ${data.nama}\n\n"${data.pertanyaan}"\n\n--------------------\n\nJawaban:\n\n`;
+                alert('Pertanyaan disalin ke form Artikel. Silakan isi jawabannya.');
+                articleForm.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+});
 
             // --- FUNGSI GENERIC (TIDAK PERLU DIUBAH) ---
             function setupForm(formId, ref, getDataFunc) {
@@ -176,15 +389,15 @@
                     snapshot.forEach(child => {
                         articles.push({ key: child.key, ...child.val() });
                     });
-                    
+
                     articles.reverse().forEach(data => {
                         const item = document.createElement('div');
                         item.className = 'item';
-                        
+
                         const itemDetails = document.createElement('div');
                         itemDetails.className = 'item-details';
                         itemDetails.innerHTML = `<strong>${data.title}</strong>`;
-                        
+
                         const btnContainer = document.createElement('div');
                         btnContainer.style.display = 'flex';
                         btnContainer.style.gap = '10px';
@@ -210,7 +423,7 @@
                                 articlesRef.child(data.key).remove();
                             }
                         });
-                        
+
                         btnContainer.appendChild(editBtn);
                         btnContainer.appendChild(deleteBtn);
                         item.appendChild(itemDetails);
@@ -225,4 +438,5 @@
         });
     </script>
 </body>
+
 </html>
