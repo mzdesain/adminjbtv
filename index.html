@@ -1,229 +1,308 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - JBTV</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <style>
+        /* === CSS UTAMA & RESET === */
+        :root {
+            --primary-color: #114ed7;
+            --sidebar-bg: #1e293b;
+            --sidebar-text: #cbd5e1;
+            --sidebar-text-hover: #ffffff;
+            --sidebar-active-bg: #334155;
+            --content-bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --danger-color: #e74c3c;
+            --success-color: #28a745;
+            --warning-color: #f59e0b;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            background-color: #114ed7;
+            background-color: var(--content-bg);
             color: #333;
             margin: 0;
+        }
+
+        /* === STRUKTUR LAYOUT DESKTOP === */
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
             padding: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1,
-        h4,
-        h5 {
-            color: #114ed7;
-            text-align: center;
-        }
-
-        h4 {
-            border-top: 2px solid #e0e0e0;
-            padding-top: 20px;
-            margin-top: 30px;
-        }
-
-        h5 {
-            margin: 10px 0 5px 0;
-            padding: 0;
-            color: #333;
-            text-align: left;
-        }
-
-        form {
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-bottom: 20px;
         }
 
-        input,
-        select,
-        button,
-        textarea {
-            padding: 12px;
-            font-size: 1em;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-family: sans-serif;
-        }
-
-        textarea {
-            height: 120px;
-            resize: vertical;
-            font-family: monospace;
-            color: #333;
-        }
-
-        button {
-            background-color: #114ed7;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        .item-list {
-            margin-top: 20px;
-            border-top: 1px solid #eee;
-            padding-top: 10px;
-        }
-
-        .item {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .item-details {
-            flex-grow: 1;
-            word-break: break-all;
-            font-size: 1em;
-            font-weight: 500;
-        }
-
-        .delete-btn {
-            background-color: #e74c3c;
-            color: white;
-            padding: 8px 12px;
-            font-size: 0.9em;
-            border-radius: 5px;
-            flex-shrink: 0;
-            border: none;
-            cursor: pointer;
-        }
-
-        .current-value {
-            font-style: italic;
-            color: #555;
+        .sidebar-header {
             text-align: center;
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border-radius: 5px;
+            margin-bottom: 30px;
         }
-        /* === CSS BARU UNTUK DAFTAR PERTANYAAN === */
-.item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-.question-meta {
-    font-size: 0.85em;
-    color: #555;
-}
-.question-text {
-    font-weight: 500;
-    margin-top: 5px;
-    white-space: pre-wrap; /* Agar format baris baru terjaga */
-    background-color: #fff;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #eee;
-}
-.action-btn-group {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    border-top: 1px solid #eee;
-    padding-top: 10px;
-}
-.action-btn-group button {
-    padding: 8px 12px;
-    font-size: 0.9em;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-.btn-make-article {
-    background-color: #28a745; /* Hijau */
-}
-/* === AKHIR CSS BARU === */
+
+        .sidebar-header h2 {
+            color: var(--sidebar-text-hover);
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .sidebar-nav {
+            flex-grow: 1;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .sidebar-nav a:hover {
+            background-color: var(--sidebar-active-bg);
+            color: var(--sidebar-text-hover);
+        }
+
+        .sidebar-nav a.active {
+            background-color: var(--primary-color);
+            color: var(--sidebar-text-hover);
+            font-weight: 600;
+        }
         
+        .sidebar-footer {
+            font-size: 0.8em;
+            text-align: center;
+            opacity: 0.6;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .content-page { display: none; }
+        .content-page.active { display: block; }
+        
+        .content-card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        h4 { color: var(--primary-color); text-align: left; margin: 0; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font-size: 1.3em; }
+        h5 { margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: #333; }
+        form { display: flex; flex-direction: column; gap: 15px; }
+        input, select, button, textarea { padding: 12px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; font-family: sans-serif; box-sizing: border-box; }
+        textarea { height: 120px; resize: vertical; }
+        button { background-color: var(--primary-color); color: white; border: none; cursor: pointer; font-weight: bold; transition: background-color 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        button:hover { opacity: 0.9; }
+
+        .item-list { margin-top: 20px; }
+        .item { background-color: #f9fafb; padding: 15px; border: 1px solid var(--border-color); border-radius: 5px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .item-details { flex-grow: 1; word-break: break-all; }
+        .current-value { font-style: italic; color: #555; text-align: center; margin-bottom: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 5px; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .question-meta { font-size: 0.85em; color: #555; }
+        .question-text { font-weight: 500; margin-top: 5px; white-space: pre-wrap; background-color: var(--card-bg); padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); }
+        .action-btn-group { display: flex; gap: 10px; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; }
+        .action-btn-group button, .item .btn-container button { padding: 8px 12px; font-size: 0.9em; }
+        .btn-make-article { background-color: var(--success-color); }
+        .item .btn-container { display: flex; gap: 10px; flex-shrink: 0; }
+        .item .edit-btn { background-color: var(--warning-color); color: #333; }
+        .item .delete-btn { background-color: var(--danger-color); }
+        .simple-item { flex-direction: row; justify-content: space-between; align-items: center; }
+
+        /* === ELEMEN BARU UNTUK MOBILE === */
+        .mobile-header {
+            display: none; /* Sembunyikan di desktop */
+            background-color: var(--sidebar-bg);
+            color: white;
+            padding: 10px 15px;
+            align-items: center;
+        }
+        #menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+        .mobile-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        /* === RESPONSIVE DESIGN (UNTUK MOBILE) === */
+        @media (max-width: 768px) {
+            .admin-wrapper {
+                flex-direction: column; /* Ubah tumpukan menjadi vertikal */
+            }
+            .mobile-header {
+                display: flex; /* Tampilkan header mobile */
+            }
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                z-index: 1001;
+                transform: translateX(-100%); /* Sembunyikan ke kiri */
+                transition: transform 0.3s ease-in-out;
+            }
+            .sidebar.is-open {
+                transform: translateX(0); /* Tampilkan sidebar */
+            }
+            .main-content {
+                padding: 15px; /* Kurangi padding di mobile */
+            }
+            .content-card {
+                padding: 15px;
+            }
+            h4 {
+                font-size: 1.1em;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Admin JB TV</h1>
+    <div class="mobile-header">
+        <button id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
+        <h3>Admin Panel</h3>
+    </div>
 
-        <h4>Kelola Tanggal Kajian Pekan Ini</h4>
-        <form id="tanggalForm">
-            <p class="current-value">Saat ini: <strong id="currentTanggalText">Memuat...</strong></p>
-            <input type="text" id="tanggalText" placeholder="cth: Jadwal Kajian, 2 Juli - 8 Juli 2025" required>
-            <button type="submit">Update Tanggal</button>
-        </form>
+    <div class="admin-wrapper">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>JBTV Admin</h2>
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="#" class="sidebar-link active" data-target="content-jadwal"><i class="fa-solid fa-calendar-days"></i> Kelola Jadwal</a></li>
+                <li><a href="#" class="sidebar-link" data-target="content-pengumuman"><i class="fa-solid fa-bullhorn"></i> Kelola Pengumuman</a></li>
+                <li><a href="#" class="sidebar-link" data-target="content-artikel"><i class="fa-solid fa-feather-pointed"></i> Artikel & Pertanyaan</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                &copy; 2025 JBTV
+            </div>
+        </nav>
 
-        <h4>Kelola Jadwal Kajian Rutin</h4>
-        <form id="jadwalForm">
-            <select id="jadwalUstadz" required>
-                <option value="">-- Pilih Ustadz --</option>
-                <option value="ustad1">TGH. Suharni Abdul Manan, Lc.</option>
-                <option value="ustad2">Ust. Zamakhsyari Dhofir, Lc., M.A.</option>
-                <option value="ustad3">Ust. Ahmad Marwazi Manar, S.H., M.A.</option>
-            </select>
-            <input type="text" id="jadwalJenis" placeholder="cth: Kajian Ilmiah" required>
-            <input type="text" id="jadwalWaktu" placeholder="cth: Malam Ahad | Tanggal" required>
-            <input type="text" id="jadwalLokasi" placeholder="cth: Masjid Jami' Nurah" required>
-            <button type="submit">Simpan Jadwal</button>
-        </form>
-        <div id="jadwalList" class="item-list"></div>
+        <main class="main-content">
+            <div id="content-jadwal" class="content-page active">
+                <div class="content-card">
+                    <h4>Kelola Tanggal Kajian Pekan Ini</h4>
+                    <form id="tanggalForm">
+                        <p class="current-value">Saat ini: <strong id="currentTanggalText">Memuat...</strong></p>
+                        <input type="text" id="tanggalText" placeholder="cth: Jadwal Kajian, 29 Juni - 5 Juli 2025" required>
+                        <button type="submit">Update Tanggal</button>
+                    </form>
+                </div>
+                <div class="content-card">
+                    <h4>Kelola Jadwal Kajian Rutin</h4>
+                    <form id="jadwalForm">
+                        <select id="jadwalUstadz" required>
+                            <option value="">-- Pilih Ustadz --</option>
+                            <option value="ustad1">TGH. Suharni Abdul Manan, Lc.</option>
+                            <option value="ustad2">Ust. Zamakhsyari Dhofir, Lc., M.A.</option>
+                            <option value="ustad3">Ust. Ahmad Marwazi Manar, S.H., M.A.</option>
+                        </select>
+                        <input type="text" id="jadwalJenis" placeholder="cth: Kajian Ilmiah" required>
+                        <input type="text" id="jadwalWaktu" placeholder="cth: Malam Ahad | Tanggal" required>
+                        <input type="text" id="jadwalLokasi" placeholder="cth: Masjid Jami' Nurah" required>
+                        <button type="submit">Simpan Jadwal</button>
+                    </form>
+                    <div id="jadwalList" class="item-list"></div>
+                </div>
+            </div>
 
-        <h4>Kelola Pengumuman Penting</h4>
-        <form id="pengumumanForm">
-            <input type="text" id="pengumumanJudul" placeholder="cth: Tabligh Akbar" required>
-            <input type="text" id="pengumumanPemateri" placeholder="cth: Ustadz Fulan, Lc." required>
-            <input type="text" id="pengumumanWaktu" placeholder="cth: Kamis, 26 Juni 2025" required>
-            <input type="text" id="pengumumanLokasi" placeholder="cth: Masjid Jami' Nurah" required>
-            <input type="url" id="pengumumanFlyerUrl" placeholder="Tempel URL Gambar" required>
-            <button type="submit">Simpan Pengumuman</button>
-        </form>
-        <div id="pengumumanList" class="item-list"></div>
-        
-        <h4><i class="fa-solid fa-inbox"></i> Pertanyaan Masuk dari Pengunjung</h4>
-<div id="questionList" class="item-list"></div>
+            <div id="content-pengumuman" class="content-page">
+                <div class="content-card">
+                    <h4>Kelola Pengumuman Penting</h4>
+                    <form id="pengumumanForm">
+                        <input type="text" id="pengumumanJudul" placeholder="cth: Tabligh Akbar" required>
+                        <input type="text" id="pengumumanPemateri" placeholder="cth: Ustadz Fulan, Lc." required>
+                        <input type="text" id="pengumumanWaktu" placeholder="cth: Kamis, 3 Juli 2025" required>
+                        <input type="text" id="pengumumanLokasi" placeholder="cth: Masjid Jami' Nurah" required>
+                        <input type="url" id="pengumumanFlyerUrl" placeholder="Tempel URL Gambar" required>
+                        <button type="submit">Simpan Pengumuman</button>
+                    </form>
+                    <div id="pengumumanList" class="item-list"></div>
+                </div>
+            </div>
 
-        <h4>Kelola Artikel Tanya Jawab</h4>
-        <form id="articleForm">
-            <input type="hidden" id="articleId">
-            <input type="text" id="articleTitle" placeholder="Judul Artikel / Pertanyaan" required>
-            <textarea id="articleContent" placeholder="Isi Artikel / Jawaban dari Ustadz..." required></textarea>
-            <button type="submit" id="articleSubmitBtn">Simpan Artikel Baru</button>
-        </form>
-        <div id="articleList" class="item-list"></div>
+            <div id="content-artikel" class="content-page">
+                <div class="content-card">
+                    <h4><i class="fa-solid fa-inbox"></i> Pertanyaan Masuk dari Pengunjung</h4>
+                    <div id="questionList" class="item-list"></div>
+                </div>
+                <div class="content-card">
+                    <h4><i class="fa-solid fa-pen-to-square"></i> Kelola Artikel Tanya Jawab</h4>
+                    <form id="articleForm">
+                        <input type="hidden" id="articleId">
+                        <input type="text" id="articleTitle" placeholder="Judul Artikel / Pertanyaan" required>
+                        <textarea id="articleContent" placeholder="Isi Artikel / Jawaban dari Ustadz..." required></textarea>
+                        <button type="submit" id="articleSubmitBtn">Simpan Artikel Baru</button>
+                    </form>
+                    <div id="articleList" class="item-list"></div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // === LOGIKA UNTUK NAVIGASI SIDEBAR (RESPONSIVE) ===
+            const sidebar = document.querySelector('.sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const contentPages = document.querySelectorAll('.content-page');
+
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('is-open');
+            });
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.dataset.target;
+                    const targetPage = document.getElementById(targetId);
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    contentPages.forEach(p => p.classList.remove('active'));
+                    link.classList.add('active');
+                    targetPage.classList.add('active');
+
+                    // Di mobile, tutup sidebar setelah link diklik
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('is-open');
+                    }
+                });
+            });
+            
+            // === KONEKSI & KONFIGURASI FIREBASE ===
             const firebaseConfig = {
                 apiKey: "AIzaSyAowVtnXTVstFSc3kSBTm5tXJkEvp31V2Y",
                 authDomain: "streamingjbtv.firebaseapp.com",
@@ -236,103 +315,56 @@
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
             
-            // --- KELOLA PERTANYAAN MASUK ---
-const questionsRef = db.ref('pertanyaanMasuk');
-const questionListContainer = document.getElementById('questionList');
+            // === KELOLA PERTANYAAN MASUK ===
+            const questionsRef = db.ref('pertanyaanMasuk');
+            const questionListContainer = document.getElementById('questionList');
+            const articleFormForQuestion = document.getElementById('articleForm');
+            const articleTitleFieldForQuestion = document.getElementById('articleTitle');
+            const articleContentFieldForQuestion = document.getElementById('articleContent');
 
-questionsRef.orderByChild('timestamp').on('value', (snapshot) => {
-    questionListContainer.innerHTML = '';
-    if (snapshot.exists()) {
-        const questions = [];
-        snapshot.forEach(child => questions.push({
-            key: child.key,
-            ...child.val()
-        }));
-        questions.reverse().forEach(data => {
-            const date = new Date(data.timestamp).toLocaleString('id-ID', {
-                dateStyle: 'medium',
-                timeStyle: 'short'
+            questionsRef.orderByChild('timestamp').on('value', (snapshot) => {
+                questionListContainer.innerHTML = ''; 
+                if (snapshot.exists()) {
+                    const questions = [];
+                    snapshot.forEach(child => questions.push({ key: child.key, ...child.val() }));
+                    questions.reverse().forEach(data => {
+                        const date = new Date(data.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+                        const item = document.createElement('div');
+                        item.className = 'item';
+                        item.innerHTML = `
+                            <div class="item-header"><div class="question-meta">Dari: <strong>${data.nama}</strong> | ${date}</div></div>
+                            <div class="question-text">${data.pertanyaan}</div>
+                            <div class="action-btn-group">
+                                <button class="btn-make-article" data-key="${data.key}"><i class="fa-solid fa-file-circle-plus"></i> Jadikan Artikel</button>
+                                <button class="delete-btn" data-key="${data.key}"><i class="fa-solid fa-trash"></i> Hapus</button>
+                            </div>`;
+                        questionListContainer.appendChild(item);
+                    });
+                } else {
+                    questionListContainer.innerHTML = '<p>Belum ada pertanyaan yang masuk.</p>';
+                }
             });
-            const item = document.createElement('div');
-            item.className = 'item';
-            item.innerHTML = `
-                <div class="item-header">
-                    <div class="question-meta">Dari: <strong>${data.nama}</strong> | ${date}</div>
-                </div>
-                <div class="question-text">${data.pertanyaan}</div>
-                <div class="action-btn-group">
-                    <button class="btn-make-article" data-key="${data.key}"><i class="fa-solid fa-file-circle-plus"></i> Jadikan Artikel</button>
-                    <button class="delete-btn" data-key="${data.key}"><i class="fa-solid fa-trash"></i> Hapus</button>
-                </div>`;
-            questionListContainer.appendChild(item);
-        });
-    } else {
-        questionListContainer.innerHTML = '<p>Belum ada pertanyaan yang masuk.</p>';
-    }
-});
 
-questionListContainer.addEventListener('click', (e) => {
-    const button = e.target.closest('button');
-    if (!button) return;
-    const key = button.dataset.key;
+            questionListContainer.addEventListener('click', (e) => {
+                const button = e.target.closest('button');
+                if (!button) return;
+                const key = button.dataset.key;
+                if (button.classList.contains('delete-btn')) { if (confirm('Anda yakin ingin menghapus pertanyaan ini?')) questionsRef.child(key).remove(); }
+                if (button.classList.contains('btn-make-article')) {
+                    questionsRef.child(key).once('value', (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            articleTitleFieldForQuestion.value = data.pertanyaan;
+                            articleContentFieldForQuestion.value = `Pertanyaan dari: ${data.nama}\n\n"${data.pertanyaan}"\n\n--------------------\n\nJawaban:\n\n`;
+                            alert('Pertanyaan disalin ke form Artikel. Silakan isi jawabannya.');
+                            document.querySelector('.sidebar-link[data-target="content-artikel"]').click();
+                            setTimeout(() => articleFormForQuestion.scrollIntoView({ behavior: 'smooth' }), 200);
+                        }
+                    });
+                }
+            });
 
-    if (button.classList.contains('delete-btn')) {
-        if (confirm('Anda yakin ingin menghapus pertanyaan ini?')) {
-            questionsRef.child(key).remove();
-        }
-    }
-    if (button.classList.contains('btn-make-article')) {
-        const articleForm = document.getElementById('articleForm');
-        const articleTitleField = document.getElementById('articleTitle');
-        const articleContentField = document.getElementById('articleContent');
-        
-        questionsRef.child(key).once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                articleTitleField.value = data.pertanyaan;
-                articleContentField.value = `Pertanyaan dari: ${data.nama}\n\n"${data.pertanyaan}"\n\n--------------------\n\nJawaban:\n\n`;
-                alert('Pertanyaan disalin ke form Artikel. Silakan isi jawabannya.');
-                articleForm.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
-    }
-});
-
-            // --- FUNGSI GENERIC (TIDAK PERLU DIUBAH) ---
-            function setupForm(formId, ref, getDataFunc) {
-                const form = document.getElementById(formId);
-                form.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const data = getDataFunc();
-                    if (data) ref.push(data).then(() => { alert('Data berhasil disimpan!'); form.reset(); }).catch(err => alert('Gagal: ' + err.message));
-                });
-            }
-            function setupList(ref, containerId, createItemFunc) {
-                const container = document.getElementById(containerId);
-                ref.on('value', (snapshot) => {
-                    container.innerHTML = `<h5>Daftar Tersimpan</h5>`;
-                    if (snapshot.exists()) snapshot.forEach((child) => container.appendChild(createItemFunc(child.key, child.val())));
-                    else container.innerHTML += '<p>Belum ada data.</p>';
-                });
-            }
-
-            // --- KELOLA TANGGAL (TIDAK BERUBAH) ---
-            const tanggalRef = db.ref('infoSitus/rentangTanggal');
-            document.getElementById('tanggalForm').addEventListener('submit', (e) => { e.preventDefault(); tanggalRef.set(document.getElementById('tanggalText').value).then(() => { alert('Tanggal berhasil diupdate!'); document.getElementById('tanggalForm').reset(); }); });
-            tanggalRef.on('value', (s) => { document.getElementById('currentTanggalText').textContent = s.exists() ? s.val() : 'Belum diatur'; });
-
-            // --- KELOLA JADWAL (TIDAK BERUBAH) ---
-            const jadwalRef = db.ref('jadwalKajian');
-            setupForm('jadwalForm', jadwalRef, () => ({ ustadzId: document.getElementById('jadwalUstadz').value, ustadzName: document.getElementById('jadwalUstadz').options[document.getElementById('jadwalUstadz').selectedIndex].text, jenis: document.getElementById('jadwalJenis').value, waktu: document.getElementById('jadwalWaktu').value, lokasi: document.getElementById('jadwalLokasi').value, }));
-            setupList(jadwalRef, 'jadwalList', (key, data) => { const item = document.createElement('div'); item.className = 'item'; item.innerHTML = `<div class="item-details"><strong>${data.ustadzName}</strong><br>${data.jenis} - ${data.waktu} di ${data.lokasi}</div>`; const btn = document.createElement('button'); btn.className = 'delete-btn'; btn.textContent = 'Hapus'; btn.addEventListener('click', () => { if (confirm('Yakin?')) jadwalRef.child(key).remove(); }); item.appendChild(btn); return item; });
-
-            // --- KELOLA PENGUMUMAN (TIDAK BERUBAH) ---
-            const pengumumanRef = db.ref('pengumuman');
-            setupForm('pengumumanForm', pengumumanRef, () => ({ judul: document.getElementById('pengumumanJudul').value, pemateri: document.getElementById('pengumumanPemateri').value, waktu: document.getElementById('pengumumanWaktu').value, lokasi: document.getElementById('pengumumanLokasi').value, flyerUrl: document.getElementById('pengumumanFlyerUrl').value }));
-            setupList(pengumumanRef, 'pengumumanList', (key, data) => { const item = document.createElement('div'); item.className = 'item'; item.innerHTML = `<div class="item-details"><strong>${data.judul}</strong> (${data.pemateri})<br>${data.waktu} di ${data.lokasi}</div>`; const btn = document.createElement('button'); btn.className = 'delete-btn'; btn.textContent = 'Hapus'; btn.addEventListener('click', () => { if (confirm('Yakin?')) pengumumanRef.child(key).remove(); }); item.appendChild(btn); return item; });
-
-
-            // === KODE BARU DAN LENGKAP UNTUK FUNGSI ARTIKEL ===
+            // === KELOLA ARTIKEL ===
             const articleForm = document.getElementById('articleForm');
             const articleSubmitBtn = document.getElementById('articleSubmitBtn');
             const articleIdField = document.getElementById('articleId');
@@ -341,102 +373,47 @@ questionListContainer.addEventListener('click', (e) => {
             const articleListContainer = document.getElementById('articleList');
             const articlesRef = db.ref('articles');
 
-            function resetArticleForm() {
-                articleForm.reset();
-                articleIdField.value = '';
-                articleSubmitBtn.textContent = 'Simpan Artikel Baru';
-                articleSubmitBtn.style.backgroundColor = '#114ed7';
-            }
-
-            articleForm.addEventListener('submit', (e) => {
-                e.preventDefault(); // <-- Baris ini sangat penting
-                const title = articleTitleField.value.trim();
-                const content = articleContentField.value.trim();
-                const articleId = articleIdField.value;
-
-                if (!title || !content) {
-                    alert('Judul dan Isi Artikel tidak boleh kosong!');
-                    return;
-                }
-
-                const data = {
-                    title: title,
-                    content: content,
-                    timestamp: Date.now()
-                };
-
-                if (articleId) {
-                    articlesRef.child(articleId).update(data)
-                        .then(() => {
-                            alert('Artikel berhasil diperbarui!');
-                            resetArticleForm();
-                        })
-                        .catch(err => alert('Gagal memperbarui: ' + err.message));
-                } else {
-                    articlesRef.push(data)
-                        .then(() => {
-                            alert('Artikel berhasil disimpan!');
-                            resetArticleForm();
-                        })
-                        .catch(err => alert('Gagal menyimpan: ' + err.message));
-                }
-            });
-
+            function resetArticleForm() { articleForm.reset(); articleIdField.value = ''; articleSubmitBtn.textContent = 'Simpan Artikel Baru'; articleSubmitBtn.style.backgroundColor = 'var(--primary-color)'; }
+            articleForm.addEventListener('submit', (e) => { e.preventDefault(); const title = articleTitleField.value.trim(); const content = articleContentField.value.trim(); if (!title || !content) return alert('Judul dan Isi tidak boleh kosong!'); const data = { title: title, content: content, timestamp: Date.now() }; if (articleIdField.value) { articlesRef.child(articleIdField.value).update(data).then(() => { alert('Artikel diperbarui!'); resetArticleForm(); }); } else { articlesRef.push(data).then(() => { alert('Artikel disimpan!'); resetArticleForm(); }); } });
             articlesRef.orderByChild('timestamp').on('value', (snapshot) => {
-                articleListContainer.innerHTML = `<h5>Daftar Artikel Tersimpan</h5>`;
+                articleListContainer.innerHTML = '<h5>Daftar Artikel Tersimpan</h5>';
                 if (snapshot.exists()) {
                     const articles = [];
-                    snapshot.forEach(child => {
-                        articles.push({ key: child.key, ...child.val() });
-                    });
-
+                    snapshot.forEach(child => articles.push({ key: child.key, ...child.val() }));
                     articles.reverse().forEach(data => {
                         const item = document.createElement('div');
-                        item.className = 'item';
-
-                        const itemDetails = document.createElement('div');
-                        itemDetails.className = 'item-details';
-                        itemDetails.innerHTML = `<strong>${data.title}</strong>`;
-
+                        item.className = 'item simple-item';
+                        item.innerHTML = `<div class="item-details"><strong>${data.title}</strong></div>`;
                         const btnContainer = document.createElement('div');
-                        btnContainer.style.display = 'flex';
-                        btnContainer.style.gap = '10px';
-
+                        btnContainer.className = 'btn-container';
                         const editBtn = document.createElement('button');
-                        editBtn.textContent = 'Edit';
-                        editBtn.style.backgroundColor = '#28a745';
-                        editBtn.className = 'delete-btn';
-                        editBtn.addEventListener('click', () => {
-                            articleIdField.value = data.key;
-                            articleTitleField.value = data.title;
-                            articleContentField.value = data.content;
-                            articleSubmitBtn.textContent = 'Update Artikel';
-                            articleSubmitBtn.style.backgroundColor = '#28a745';
-                            window.scrollTo(0, articleForm.offsetTop - 20);
-                        });
-
+                        editBtn.className = 'edit-btn'; editBtn.innerHTML = '<i class="fa-solid fa-pencil"></i> Edit';
+                        editBtn.onclick = () => { articleIdField.value = data.key; articleTitleField.value = data.title; articleContentField.value = data.content; articleSubmitBtn.textContent = 'Update Artikel'; articleSubmitBtn.style.backgroundColor = 'var(--success-color)'; articleForm.scrollIntoView({ behavior: 'smooth' }); };
                         const deleteBtn = document.createElement('button');
-                        deleteBtn.textContent = 'Hapus';
-                        deleteBtn.className = 'delete-btn';
-                        deleteBtn.addEventListener('click', () => {
-                            if (confirm(`Yakin ingin menghapus artikel "${data.title}"?`)) {
-                                articlesRef.child(data.key).remove();
-                            }
-                        });
-
-                        btnContainer.appendChild(editBtn);
-                        btnContainer.appendChild(deleteBtn);
-                        item.appendChild(itemDetails);
+                        deleteBtn.className = 'delete-btn'; deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i> Hapus';
+                        deleteBtn.onclick = () => { if (confirm(`Yakin hapus "${data.title}"?`)) articlesRef.child(data.key).remove(); };
+                        btnContainer.appendChild(editBtn); btnContainer.appendChild(deleteBtn);
                         item.appendChild(btnContainer);
                         articleListContainer.appendChild(item);
                     });
-                } else {
-                    articleListContainer.innerHTML += '<p>Belum ada artikel.</p>';
-                }
+                } else { articleListContainer.innerHTML += '<p>Belum ada artikel.</p>'; }
             });
-            // === AKHIR KODE ARTIKEL ===
+
+            // === KELOLA JADWAL, PENGUMUMAN, TANGGAL ===
+            const tanggalRef = db.ref('infoSitus/rentangTanggal');
+            document.getElementById('tanggalForm').addEventListener('submit', (e) => { e.preventDefault(); tanggalRef.set(document.getElementById('tanggalText').value).then(() => { alert('Tanggal berhasil diupdate!'); document.getElementById('tanggalForm').reset(); }); });
+            tanggalRef.on('value', (s) => { document.getElementById('currentTanggalText').textContent = s.exists() ? s.val() : 'Belum diatur'; });
+
+            const jadwalRef = db.ref('jadwalKajian');
+            document.getElementById('jadwalForm').addEventListener('submit', e => { e.preventDefault(); const form = e.target; const data = { ustadzId: form.jadwalUstadz.value, ustadzName: form.jadwalUstadz.options[form.jadwalUstadz.selectedIndex].text, jenis: form.jadwalJenis.value, waktu: form.jadwalWaktu.value, lokasi: form.jadwalLokasi.value }; jadwalRef.push(data).then(() => { alert('Jadwal disimpan!'); form.reset(); }); });
+            const jadwalListContainer = document.getElementById('jadwalList');
+            jadwalRef.on('value', snapshot => { jadwalListContainer.innerHTML = '<h5>Daftar Jadwal</h5>'; if(snapshot.exists()) { snapshot.forEach(child => { const key = child.key; const data = child.val(); const item = document.createElement('div'); item.className = 'item simple-item'; item.innerHTML = `<div class="item-details"><strong>${data.ustadzName}</strong>: ${data.jenis} - ${data.waktu}</div>`; const btn = document.createElement('button'); btn.className = 'delete-btn'; btn.textContent = 'Hapus'; btn.onclick = () => { if(confirm('Yakin?')) jadwalRef.child(key).remove(); }; item.appendChild(btn); jadwalListContainer.appendChild(item); }); } else { jadwalListContainer.innerHTML += '<p>Belum ada jadwal.</p>'; } });
+
+            const pengumumanRef = db.ref('pengumuman');
+            document.getElementById('pengumumanForm').addEventListener('submit', e => { e.preventDefault(); const form = e.target; const data = { judul: form.pengumumanJudul.value, pemateri: form.pengumumanPemateri.value, waktu: form.pengumumanWaktu.value, lokasi: form.pengumumanLokasi.value, flyerUrl: form.pengumumanFlyerUrl.value }; pengumumanRef.push(data).then(() => { alert('Pengumuman disimpan!'); form.reset(); }); });
+            const pengumumanListContainer = document.getElementById('pengumumanList');
+            pengumumanRef.on('value', snapshot => { pengumumanListContainer.innerHTML = '<h5>Daftar Pengumuman</h5>'; if(snapshot.exists()) { snapshot.forEach(child => { const key = child.key; const data = child.val(); const item = document.createElement('div'); item.className = 'item simple-item'; item.innerHTML = `<div class="item-details"><strong>${data.judul}</strong> (${data.pemateri})</div>`; const btn = document.createElement('button'); btn.className = 'delete-btn'; btn.textContent = 'Hapus'; btn.onclick = () => { if(confirm('Yakin?')) pengumumanRef.child(key).remove(); }; item.appendChild(btn); pengumumanListContainer.appendChild(item); }); } else { pengumumanListContainer.innerHTML += '<p>Belum ada pengumuman.</p>'; } });
         });
     </script>
 </body>
-
 </html>
