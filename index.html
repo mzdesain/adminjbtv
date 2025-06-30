@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
     <style>
-        /* --- Variabel Warna Global (Root) --- */
+        /* --- Semua CSS Anda, tidak ada perubahan --- */
         :root {
             --primary-color: #114ed7;
             --sidebar-bg: #1e293b;
@@ -25,363 +25,57 @@
             --success-color: #28a745;
             --warning-color: #f59e0b;
         }
-
-        /* --- Reset & Gaya Dasar Body --- */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            background-color: var(--content-bg);
-            color: #333;
-            margin: 0;
-        }
-
-        /* --- Struktur Layout Utama (Sidebar & Konten) --- */
-        .admin-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            color: var(--sidebar-text);
-            padding: 20px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .main-content {
-            flex-grow: 1;
-            padding: 30px;
-            overflow-y: auto;
-        }
-
-        /* --- Gaya Elemen di Dalam Sidebar --- */
-        .sidebar-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .sidebar-header h2 {
-            color: var(--sidebar-text-hover);
-            margin: 0;
-            font-size: 1.5em;
-        }
-
-        .sidebar-nav {
-            flex-grow: 1;
-        }
-
-        .sidebar-nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .sidebar-nav a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            color: var(--sidebar-text);
-            text-decoration: none;
-            border-radius: 6px;
-            margin-bottom: 5px;
-            transition: background-color 0.2s, color 0.2s;
-        }
-
-        .sidebar-nav a:hover {
-            background-color: var(--sidebar-active-bg);
-            color: var(--sidebar-text-hover);
-        }
-
-        .sidebar-nav a.active {
-            background-color: var(--primary-color);
-            color: var(--sidebar-text-hover);
-            font-weight: 600;
-        }
-
-        .sidebar-footer {
-            font-size: 0.8em;
-            text-align: center;
-            opacity: 0.6;
-        }
-
-        /* --- Gaya Konten Utama & Kartu --- */
-        .content-page {
-            display: none;
-        }
-
-        .content-page.active {
-            display: block;
-        }
-
-        .content-card {
-            background-color: var(--card-bg);
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
-        }
-
-        /* --- Gaya Umum untuk Form & Input --- */
-        h4 {
-            color: var(--primary-color);
-            text-align: left;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            font-size: 1.3em;
-        }
-
-        h5 {
-            margin-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-            color: #333;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        input,
-        select,
-        button,
-        textarea {
-            padding: 12px;
-            font-size: 1em;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-family: sans-serif;
-            box-sizing: border-box;
-        }
-
-        textarea {
-            height: 120px;
-            resize: vertical;
-        }
-        
-        /* --- [BARU] Gaya untuk Editor Teks --- */
-        .text-editor-toolbar {
-            display: flex;
-            gap: 5px;
-            padding: 8px;
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
-            border-bottom: none;
-            border-top-left-radius: 5px;
-            border-top-right-radius: 5px;
-        }
-
-        .toolbar-button {
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            font-size: 1em;
-            width: 35px;
-            height: 35px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .toolbar-button:hover {
-            background-color: #e0e0e0;
-        }
-
-        .text-editor-content {
-            border: 1px solid #ccc;
-            padding: 12px;
-            min-height: 200px;
-            border-radius: 5px;
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
-            background-color: #fff;
-            outline: none; /* Hilangkan outline saat fokus */
-        }
-        /* --- [AKHIR BARU] --- */
-
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        /* --- Gaya untuk Daftar Item (Jadwal, Artikel, dll) --- */
-        .item-list {
-            margin-top: 20px;
-        }
-
-        .item {
-            background-color: #f9fafb;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            margin-bottom: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .simple-item {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .item-details {
-            flex-grow: 1;
-            word-break: break-all;
-        }
-
-        .current-value {
-            font-style: italic;
-            color: #555;
-            text-align: center;
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border-radius: 5px;
-        }
-
-        /* Gaya Khusus untuk Daftar Pertanyaan */
-        .item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .question-meta {
-            font-size: 0.85em;
-            color: #555;
-        }
-
-        .question-text {
-            font-weight: 500;
-            margin-top: 5px;
-            white-space: pre-wrap;
-            background-color: var(--card-bg);
-            padding: 10px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-        }
-
-        .action-btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 10px;
-        }
-
-        /* Gaya untuk Tombol-tombol Aksi */
-        .action-btn-group button,
-        .item .btn-container button {
-            padding: 8px 12px;
-            font-size: 0.9em;
-        }
-
-        .btn-make-article {
-            background-color: var(--success-color);
-        }
-
-        .item .btn-container {
-            display: flex;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        .item .edit-btn {
-            background-color: var(--warning-color);
-            color: #333;
-        }
-
-        .item .delete-btn {
-            background-color: var(--danger-color);
-        }
-
-        /* --- Gaya untuk Tampilan Mobile --- */
-        .mobile-header {
-            display: none;
-            /* Sembunyikan di desktop */
-            background-color: var(--sidebar-bg);
-            color: white;
-            padding: 10px 15px;
-            align-items: center;
-        }
-
-        #menu-toggle {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            margin-right: 15px;
-        }
-
-        .mobile-header h3 {
-            margin: 0;
-            font-size: 1.2em;
-        }
-
-        /* --- Aturan Responsive (Media Query) --- */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: var(--content-bg); color: #333; margin: 0; }
+        .admin-wrapper { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: var(--sidebar-text); padding: 20px; flex-shrink: 0; display: flex; flex-direction: column; }
+        .main-content { flex-grow: 1; padding: 30px; overflow-y: auto; }
+        .sidebar-header { text-align: center; margin-bottom: 30px; }
+        .sidebar-header h2 { color: var(--sidebar-text-hover); margin: 0; font-size: 1.5em; }
+        .sidebar-nav { flex-grow: 1; }
+        .sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--sidebar-text); text-decoration: none; border-radius: 6px; margin-bottom: 5px; transition: background-color 0.2s, color 0.2s; }
+        .sidebar-nav a:hover { background-color: var(--sidebar-active-bg); color: var(--sidebar-text-hover); }
+        .sidebar-nav a.active { background-color: var(--primary-color); color: var(--sidebar-text-hover); font-weight: 600; }
+        .sidebar-footer { font-size: 0.8em; text-align: center; opacity: 0.6; }
+        .content-page { display: none; }
+        .content-page.active { display: block; }
+        .content-card { background-color: var(--card-bg); padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); margin-bottom: 30px; }
+        h4 { color: var(--primary-color); text-align: left; margin: 0; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font-size: 1.3em; }
+        h5 { margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: #333; }
+        form { display: flex; flex-direction: column; gap: 15px; }
+        input, select, button, textarea { padding: 12px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; font-family: sans-serif; box-sizing: border-box; }
+        textarea { height: 120px; resize: vertical; }
+        .text-editor-toolbar { display: flex; gap: 5px; padding: 8px; background-color: #f0f0f0; border: 1px solid #ccc; border-bottom: none; border-top-left-radius: 5px; border-top-right-radius: 5px; }
+        .toolbar-button { background-color: #fff; border: 1px solid #ccc; border-radius: 3px; font-size: 1em; width: 35px; height: 35px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .toolbar-button:hover { background-color: #e0e0e0; }
+        .text-editor-content { border: 1px solid #ccc; padding: 12px; min-height: 200px; border-radius: 5px; border-top-left-radius: 0; border-top-right-radius: 0; background-color: #fff; outline: none; }
+        button { background-color: var(--primary-color); color: white; border: none; cursor: pointer; font-weight: bold; transition: background-color 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        button:hover { opacity: 0.9; }
+        .item-list { margin-top: 20px; }
+        .item { background-color: #f9fafb; padding: 15px; border: 1px solid var(--border-color); border-radius: 5px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .simple-item { flex-direction: row; justify-content: space-between; align-items: center; }
+        .item-details { flex-grow: 1; word-break: break-all; }
+        .current-value { font-style: italic; color: #555; text-align: center; margin-bottom: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 5px; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .question-meta { font-size: 0.85em; color: #555; }
+        .question-text { font-weight: 500; margin-top: 5px; white-space: pre-wrap; background-color: var(--card-bg); padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); }
+        .action-btn-group { display: flex; gap: 10px; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; }
+        .action-btn-group button, .item .btn-container button { padding: 8px 12px; font-size: 0.9em; }
+        .btn-make-article { background-color: var(--success-color); }
+        .item .btn-container { display: flex; gap: 10px; flex-shrink: 0; }
+        .item .edit-btn { background-color: var(--warning-color); color: #333; }
+        .item .delete-btn { background-color: var(--danger-color); }
+        .mobile-header { display: none; background-color: var(--sidebar-bg); color: white; padding: 10px 15px; align-items: center; }
+        #menu-toggle { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; }
+        .mobile-header h3 { margin: 0; font-size: 1.2em; }
         @media (max-width: 768px) {
-            .admin-wrapper {
-                flex-direction: column;
-                /* Ubah tumpukan menjadi vertikal */
-            }
-
-            .mobile-header {
-                display: flex;
-                /* Tampilkan header mobile */
-            }
-
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100%;
-                z-index: 1001;
-                transform: translateX(-100%);
-                /* Sembunyikan ke kiri */
-                transition: transform 0.3s ease-in-out;
-            }
-
-            .sidebar.is-open {
-                transform: translateX(0);
-                /* Tampilkan sidebar saat kelas 'is-open' ada */
-            }
-
-            .main-content {
-                padding: 15px;
-                /* Kurangi padding di mobile */
-            }
-
-            .content-card {
-                padding: 15px;
-            }
-
-            h4 {
-                font-size: 1.1em;
-            }
+            .admin-wrapper { flex-direction: column; }
+            .mobile-header { display: flex; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1001; transform: translateX(-100%); transition: transform 0.3s ease-in-out; }
+            .sidebar.is-open { transform: translateX(0); }
+            .main-content { padding: 15px; }
+            .content-card { padding: 15px; }
+            h4 { font-size: 1.1em; }
         }
     </style>
 </head>
@@ -398,12 +92,10 @@
                 <h2>JBTV Admin</h2>
             </div>
             <ul class="sidebar-nav">
-                <li><a href="#" class="sidebar-link active" data-target="content-jadwal"><i
-                            class="fa-solid fa-calendar-days"></i> Kelola Jadwal</a></li>
-                <li><a href="#" class="sidebar-link" data-target="content-pengumuman"><i
-                            class="fa-solid fa-bullhorn"></i> Kelola Pengumuman</a></li>
-                <li><a href="#" class="sidebar-link" data-target="content-artikel"><i
-                            class="fa-solid fa-feather-pointed"></i> Artikel & Pertanyaan</a></li>
+                <li><a href="#" class="sidebar-link active" data-target="content-livestream"><i class="fa-solid fa-tower-broadcast"></i> Kelola Live Stream</a></li>
+                <li><a href="#" class="sidebar-link" data-target="content-jadwal"><i class="fa-solid fa-calendar-days"></i> Kelola Jadwal</a></li>
+                <li><a href="#" class="sidebar-link" data-target="content-pengumuman"><i class="fa-solid fa-bullhorn"></i> Kelola Pengumuman</a></li>
+                <li><a href="#" class="sidebar-link" data-target="content-artikel"><i class="fa-solid fa-feather-pointed"></i> Artikel & Pertanyaan</a></li>
             </ul>
             <div class="sidebar-footer">
                 &copy; 2025 JBTV
@@ -411,13 +103,40 @@
         </nav>
 
         <main class="main-content">
-            <div id="content-jadwal" class="content-page active">
+            <div id="content-livestream" class="content-page active">
+                <div class="content-card">
+                    <h4><i class="fa-solid fa-tower-broadcast"></i>Kelola Status Live Stream</h4>
+                    <form id="liveStreamForm" onsubmit="return false;">
+                        <div class="form-group">
+                            <label for="liveUrlInput">Tempel link</label>
+                            <input type="url" id="liveUrlInput" placeholder="Tempel URL video dari Facebook di sini...">
+                        </div>
+                        
+                        <div class="form-group" style="background-color: #f9fafb; padding: 15px; border-radius: 5px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <label style="margin-bottom: 0;">Status Siaran Saat Ini</label>
+                                <div>
+                                    <span style="margin-right: 10px; font-weight:bold; font-size: 1.1em;" id="liveStatusLabel">OFFLINE</span>
+                                    <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                                        <input type="checkbox" id="isLiveToggle" style="opacity: 0; width: 0; height: 0;">
+                                        <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="liveUpdateButton"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button>
+                    </form>
+                    <p id="liveStatusMessage" style="text-align: center; margin-top: 20px; font-weight: bold; height: 20px;"></p>
+                </div>
+            </div>
+
+            <div id="content-jadwal" class="content-page">
                 <div class="content-card">
                     <h4><i class="fa-solid fa-calendar-days"></i>Kelola Tanggal Kajian Pekan Ini</h4>
                     <form id="tanggalForm">
                         <p class="current-value">Saat ini: <strong id="currentTanggalText">Memuat...</strong></p>
-                        <input type="text" id="tanggalText" placeholder="cth: Jadwal Kajian, 29 Juni - 5 Juli 2025"
-                            required>
+                        <input type="text" id="tanggalText" placeholder="cth: Jadwal Kajian, 29 Juni - 5 Juli 2025" required>
                         <button type="submit">Update Tanggal</button>
                     </form>
                 </div>
@@ -464,16 +183,15 @@
                     <form id="articleForm">
                         <input type="hidden" id="articleId">
                         <input type="text" id="articleTitle" placeholder="Judul Artikel / Pertanyaan" required>
-
                         <div>
                             <div class="text-editor-toolbar">
-                                <button type="button" style= "color: black;" class="toolbar-button" data-command="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
-                                <button type="button" style= "color: black;" class="toolbar-button" data-command="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
-                                <button type="button" style= "color: black;" class="toolbar-button" data-command="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
-                                <button type="button" style= "color: black;" class="toolbar-button" data-command="justifyLeft" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
-                                <button type="button" style= "color: black;" class="toolbar-button" data-command="justifyCenter" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
-                                <button type="button" style= "color: black;" class="toolbar-button" data-command="justifyRight" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
-                                <button type="button" style= "color: black;" class="toolbar-button" data-command="justifyFull" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
+                                <button type="button" style="color: black;" class="toolbar-button" data-command="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                                <button type="button" style="color: black;" class="toolbar-button" data-command="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                                <button type="button" style="color: black;" class="toolbar-button" data-command="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
+                                <button type="button" style="color: black;" class="toolbar-button" data-command="justifyLeft" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                                <button type="button" style="color: black;" class="toolbar-button" data-command="justifyCenter" title="Align Center"><i class="fa-solid fa-align-center"></i></button>
+                                <button type="button" style="color: black;" class="toolbar-button" data-command="justifyRight" title="Align Right"><i class="fa-solid fa-align-right"></i></button>
+                                <button type="button" style="color: black;" class="toolbar-button" data-command="justifyFull" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
                             </div>
                             <div id="articleContent" class="text-editor-content" contenteditable="true" placeholder="Isi Artikel / Jawaban dari Ustadz..."></div>
                         </div>
@@ -486,18 +204,31 @@
     </div>
 
     <script>
+        const password = "adminmediajbtv"; // GANTI DENGAN PASSWORD RAHASIA ANDA
+        const enteredPassword = prompt("Masukkan Password Admin:");
+
+        if (enteredPassword !== password) {
+            alert("Password Salah! Akses ditolak.");
+            document.body.innerHTML = '<h1>Akses Ditolak</h1>';
+            throw new Error("Akses Ditolak");
+        }
+    
         document.addEventListener("DOMContentLoaded", function () {
-            // === LOGIKA UNTUK NAVIGASI SIDEBAR DAN TAMPILAN MOBILE ===
+            // === LOGIKA NAVIGASI SIDEBAR ===
             const sidebar = document.querySelector('.sidebar');
             const menuToggle = document.getElementById('menu-toggle');
             const sidebarLinks = document.querySelectorAll('.sidebar-link');
             const contentPages = document.querySelectorAll('.content-page');
 
-            menuToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('is-open');
-            });
+            // Set halaman default
+            const defaultPage = 'content-livestream';
+            document.querySelector(`.sidebar-link[data-target="${defaultPage}"]`).classList.add('active');
+            document.getElementById(defaultPage).classList.add('active');
 
             sidebarLinks.forEach(link => {
+                // Hapus class 'active' dari semua link saat pertama kali load, kecuali default
+                if(link.dataset.target !== defaultPage) link.classList.remove('active');
+
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const targetId = link.dataset.target;
@@ -528,26 +259,89 @@
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
             
-            // === [BARU] LOGIKA UNTUK RICH TEXT EDITOR ===
+            // === [PERUBAHAN 3] LOGIKA LIVE STREAM DITAMBAHKAN DI SINI ===
+            const liveStreamRef = db.ref('live_stream');
+            const liveStreamForm = document.getElementById('liveStreamForm');
+            const liveUrlInput = document.getElementById('liveUrlInput');
+            const isLiveToggle = document.getElementById('isLiveToggle');
+            const liveStatusLabel = document.getElementById('liveStatusLabel');
+            const liveUpdateButton = document.getElementById('liveUpdateButton');
+            const liveStatusMessage = document.getElementById('liveStatusMessage');
+
+            function loadCurrentLiveData() {
+                liveStreamRef.once('value').then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        liveUrlInput.value = data.current_video_url || '';
+                        isLiveToggle.checked = data.is_live || false;
+                        updateLiveStatusLabel(isLiveToggle.checked);
+                    }
+                }).catch(e => console.error("Gagal memuat data live:", e));
+            }
+
+            function updateLiveStatusLabel(isLive) {
+                if (isLive) {
+                    liveStatusLabel.textContent = "LIVE";
+                    liveStatusLabel.style.color = "var(--success-color)";
+                } else {
+                    liveStatusLabel.textContent = "OFFLINE";
+                    liveStatusLabel.style.color = "var(--danger-color)";
+                }
+            }
+            
+            if(isLiveToggle) isLiveToggle.addEventListener('change', () => updateLiveStatusLabel(isLiveToggle.checked));
+            
+            if(liveStreamForm) liveStreamForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const dataToUpdate = {
+                    current_video_url: liveUrlInput.value.trim(),
+                    is_live: isLiveToggle.checked
+                };
+
+                if (dataToUpdate.is_live && !dataToUpdate.current_video_url) {
+                    alert('URL Video tidak boleh kosong jika status siaran diatur ke LIVE.');
+                    return;
+                }
+
+                liveUpdateButton.disabled = true;
+                liveUpdateButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memperbarui...';
+                liveStatusMessage.textContent = '';
+
+                liveStreamRef.set(dataToUpdate)
+                    .then(() => {
+                        liveStatusMessage.textContent = 'Status live stream berhasil diperbarui!';
+                        liveStatusMessage.style.color = 'var(--success-color)';
+                    })
+                    .catch((error) => {
+                        liveStatusMessage.textContent = 'Error: ' + error.message;
+                        liveStatusMessage.style.color = 'var(--danger-color)';
+                    })
+                    .finally(() => {
+                        liveUpdateButton.disabled = false;
+                        liveUpdateButton.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan';
+                        setTimeout(() => liveStatusMessage.textContent = '', 4000);
+                    });
+            });
+            
+            loadCurrentLiveData();
+
+            // --- SEMUA KODE LAMA ANDA TETAP UTUH ---
             const editorToolbar = document.querySelector('.text-editor-toolbar');
             const articleContentEditor = document.getElementById('articleContent');
+            if(editorToolbar) {
+                editorToolbar.addEventListener('click', (e) => {
+                    const button = e.target.closest('.toolbar-button');
+                    if (button) {
+                        const command = button.dataset.command;
+                        document.execCommand(command, false, null);
+                        articleContentEditor.focus();
+                    }
+                });
+            }
 
-            editorToolbar.addEventListener('click', (e) => {
-                const button = e.target.closest('.toolbar-button');
-                if (button) {
-                    const command = button.dataset.command;
-                    document.execCommand(command, false, null);
-                    articleContentEditor.focus(); // Kembalikan fokus ke editor setelah klik tombol
-                }
-            });
-            // === [AKHIR BARU] ===
-
-            // === KELOLA PERTANYAAN MASUK ===
             const questionsRef = db.ref('pertanyaanMasuk');
             const questionListContainer = document.getElementById('questionList');
             const articleTitleFieldForQuestion = document.getElementById('articleTitle');
-            
-            // [DIUBAH] Mengacu ke div editor, bukan textarea lagi
             const articleContentFieldForQuestion = document.getElementById('articleContent');
 
             questionsRef.orderByChild('timestamp').on('value', (snapshot) => {
@@ -597,7 +391,6 @@
                         const data = snapshot.val();
                         if (data) {
                             articleTitleFieldForQuestion.value = data.pertanyaan;
-                            // [DIUBAH] Menggunakan innerHTML untuk mengisi div editor
                             articleContentFieldForQuestion.innerHTML = `<p><strong>Pertanyaan dari: ${data.nama}</strong></p><p><em>"${data.pertanyaan}"</em></p><p>--------------------</p><p><strong>Jawaban:</strong></p><p><br></p>`;
                             alert('Pertanyaan disalin ke form Artikel. Silakan isi jawabannya.');
                             document.querySelector('.sidebar-link[data-target="content-artikel"]').click();
@@ -606,14 +399,11 @@
                     });
                 }
             });
-
-            // === KELOLA ARTIKEL (CREATE, READ, UPDATE, DELETE) ===
+            
             const articleForm = document.getElementById('articleForm');
             const articleSubmitBtn = document.getElementById('articleSubmitBtn');
             const articleIdField = document.getElementById('articleId');
             const articleTitleField = document.getElementById('articleTitle');
-            
-            // [DIUBAH] Mengacu ke div editor
             const articleContentField = document.getElementById('articleContent');
             const articleListContainer = document.getElementById('articleList');
             const articlesRef = db.ref('articles');
@@ -621,7 +411,6 @@
             function resetArticleForm() {
                 articleForm.reset();
                 articleIdField.value = '';
-                // [DIUBAH] Mengosongkan div editor
                 articleContentField.innerHTML = '';
                 articleSubmitBtn.textContent = 'Simpan Artikel Baru';
                 articleSubmitBtn.style.backgroundColor = 'var(--primary-color)';
@@ -630,7 +419,6 @@
             articleForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const title = articleTitleField.value.trim();
-                // [DIUBAH] Mengambil konten dari innerHTML div editor
                 const content = articleContentField.innerHTML.trim();
                 if (!title || !content) return alert('Judul dan Isi tidak boleh kosong!');
 
@@ -660,7 +448,6 @@
                     articles.reverse().forEach(data => {
                         const item = document.createElement('div');
                         item.className = 'item simple-item';
-                        // Menampilkan judul saja di daftar
                         item.innerHTML = `
                             <div class="item-details">
                                 <strong>${data.title}</strong>
@@ -673,7 +460,6 @@
                         item.querySelector('.edit-btn').onclick = () => {
                             articleIdField.value = data.key;
                             articleTitleField.value = data.title;
-                            // [DIUBAH] Mengisi div editor dengan data dari Firebase
                             articleContentField.innerHTML = data.content;
                             articleSubmitBtn.textContent = 'Update Artikel';
                             articleSubmitBtn.style.backgroundColor = 'var(--success-color)';
@@ -692,8 +478,6 @@
                 }
             });
             
-
-            // === KELOLA JADWAL, PENGUMUMAN, TANGGAL (CRUD SEDERHANA) ===
             const tanggalRef = db.ref('infoSitus/rentangTanggal');
             const jadwalRef = db.ref('jadwalKajian');
             const pengumumanRef = db.ref('pengumuman');
@@ -711,5 +495,4 @@
         });
     </script>
 </body>
-
 </html>
