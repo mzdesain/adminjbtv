@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
     <style>
-        /* --- Semua CSS Anda, tidak ada perubahan --- */
+        /* --- Variabel & Gaya Dasar --- */
         :root {
             --primary-color: #114ed7;
             --sidebar-bg: #1e293b;
@@ -25,62 +25,152 @@
             --success-color: #28a745;
             --warning-color: #f59e0b;
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: var(--content-bg); color: #333; margin: 0; }
-        .admin-wrapper { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: var(--sidebar-text); padding: 20px; flex-shrink: 0; display: flex; flex-direction: column; }
-        .main-content { flex-grow: 1; padding: 30px; overflow-y: auto; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: var(--content-bg);
+            color: #333;
+            margin: 0;
+        }
+
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* --- Sidebar & Konten Utama --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            padding: 20px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease-in-out;
+            position: fixed;
+            height: 100%;
+            z-index: 1001;
+            top: 0;
+            left: 0;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+            margin-left: 260px; /* Sesuaikan dengan lebar sidebar */
+            transition: margin-left 0.3s ease-in-out;
+        }
+
         .sidebar-header { text-align: center; margin-bottom: 30px; }
         .sidebar-header h2 { color: var(--sidebar-text-hover); margin: 0; font-size: 1.5em; }
-        .sidebar-nav { flex-grow: 1; }
-        .sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar-nav { flex-grow: 1; list-style: none; padding: 0; margin: 0; }
         .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--sidebar-text); text-decoration: none; border-radius: 6px; margin-bottom: 5px; transition: background-color 0.2s, color 0.2s; }
         .sidebar-nav a:hover { background-color: var(--sidebar-active-bg); color: var(--sidebar-text-hover); }
         .sidebar-nav a.active { background-color: var(--primary-color); color: var(--sidebar-text-hover); font-weight: 600; }
-        .sidebar-footer { font-size: 0.8em; text-align: center; opacity: 0.6; }
+        .sidebar-footer { font-size: 0.8em; text-align: center; opacity: 0.6; margin-top: 20px; }
+
         .content-page { display: none; }
         .content-page.active { display: block; }
         .content-card { background-color: var(--card-bg); padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); margin-bottom: 30px; }
+
+        /* --- Form & Input --- */
         h4 { color: var(--primary-color); text-align: left; margin: 0; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font-size: 1.3em; }
         h5 { margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: #333; }
         form { display: flex; flex-direction: column; gap: 15px; }
-        input, select, button, textarea { padding: 12px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; font-family: sans-serif; box-sizing: border-box; }
+        input, select, button, textarea { padding: 12px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; font-family: inherit; box-sizing: border-box; width: 100%; }
+        .form-group label { margin-bottom: 5px; display: block; font-weight: 500; }
+        .live-status-control { background-color: #f9fafb; padding: 15px; border-radius: 5px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
+        .live-status-control label { margin-bottom: 0; }
+        .live-status-toggle { display: flex; align-items: center; gap: 10px; }
+        .live-status-toggle #liveStatusLabel { font-weight: bold; font-size: 1.1em; }
+        
+        /* --- Toggle Switch --- */
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success-color); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* --- Text Editor --- */
         textarea { height: 120px; resize: vertical; }
-        .text-editor-toolbar { display: flex; gap: 5px; padding: 8px; background-color: #f0f0f0; border: 1px solid #ccc; border-bottom: none; border-top-left-radius: 5px; border-top-right-radius: 5px; }
-        .toolbar-button { background-color: #fff; border: 1px solid #ccc; border-radius: 3px; font-size: 1em; width: 35px; height: 35px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .text-editor-toolbar { display: flex; gap: 5px; padding: 8px; background-color: #f0f0f0; border: 1px solid #ccc; border-bottom: none; border-top-left-radius: 5px; border-top-right-radius: 5px; flex-wrap: wrap; }
+        .toolbar-button { background-color: #fff; border: 1px solid #ccc; border-radius: 3px; font-size: 1em; width: 35px; height: 35px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
         .toolbar-button:hover { background-color: #e0e0e0; }
         .text-editor-content { border: 1px solid #ccc; padding: 12px; min-height: 200px; border-radius: 5px; border-top-left-radius: 0; border-top-right-radius: 0; background-color: #fff; outline: none; }
+        
+        /* --- Tombol & Item List --- */
         button { background-color: var(--primary-color); color: white; border: none; cursor: pointer; font-weight: bold; transition: background-color 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         button:hover { opacity: 0.9; }
         .item-list { margin-top: 20px; }
         .item { background-color: #f9fafb; padding: 15px; border: 1px solid var(--border-color); border-radius: 5px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
-        .simple-item { flex-direction: row; justify-content: space-between; align-items: center; }
-        .item-details { flex-grow: 1; word-break: break-all; }
+        .simple-item { flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .item-details { flex-grow: 1; word-break: break-word; }
         .current-value { font-style: italic; color: #555; text-align: center; margin-bottom: 10px; padding: 10px; background-color: #f0f0f0; border-radius: 5px; }
         .item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
         .question-meta { font-size: 0.85em; color: #555; }
         .question-text { font-weight: 500; margin-top: 5px; white-space: pre-wrap; background-color: var(--card-bg); padding: 10px; border-radius: 4px; border: 1px solid var(--border-color); }
-        .action-btn-group { display: flex; gap: 10px; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; }
+        .action-btn-group { display: flex; gap: 10px; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; flex-wrap: wrap; }
         .action-btn-group button, .item .btn-container button { padding: 8px 12px; font-size: 0.9em; }
         .btn-make-article { background-color: var(--success-color); }
         .item .btn-container { display: flex; gap: 10px; flex-shrink: 0; }
         .item .edit-btn { background-color: var(--warning-color); color: #333; }
         .item .delete-btn { background-color: var(--danger-color); }
-        .mobile-header { display: none; background-color: var(--sidebar-bg); color: white; padding: 10px 15px; align-items: center; }
-        #menu-toggle { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; }
+
+        /* --- Header & Overlay Mobile --- */
+        .mobile-header { display: none; background-color: var(--sidebar-bg); color: white; padding: 10px 15px; align-items: center; justify-content: space-between; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+        #menu-toggle { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px; width: auto; }
         .mobile-header h3 { margin: 0; font-size: 1.2em; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; }
+        .sidebar-overlay.is-open { display: block; }
+
+        /* === Media Query untuk Responsiveness === */
         @media (max-width: 768px) {
             .admin-wrapper { flex-direction: column; }
-            .mobile-header { display: flex; }
-            .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1001; transform: translateX(-100%); transition: transform 0.3s ease-in-out; }
-            .sidebar.is-open { transform: translateX(0); }
-            .main-content { padding: 15px; }
-            .content-card { padding: 15px; }
-            h4 { font-size: 1.1em; }
+            .sidebar {
+                transform: translateX(-100%);
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            }
+            .sidebar.is-open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+                padding-top: 80px;
+            }
+            .mobile-header {
+                display: flex;
+            }
+            .content-card {
+                padding: 15px;
+            }
+            h4 {
+                font-size: 1.1em;
+            }
+            .simple-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .simple-item .btn-container {
+                width: 100%;
+                margin-top: 10px;
+            }
+            .simple-item .btn-container button {
+                flex-grow: 1;
+            }
+            .live-status-control {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
 
 <body>
+    <div class="sidebar-overlay"></div>
+
     <div class="mobile-header">
         <button id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
         <h3>Admin Panel</h3>
@@ -108,23 +198,19 @@
                     <h4><i class="fa-solid fa-tower-broadcast"></i>Kelola Status Live Stream</h4>
                     <form id="liveStreamForm" onsubmit="return false;">
                         <div class="form-group">
-                            <label for="liveUrlInput">Tempel link</label>
+                            <label for="liveUrlInput">URL Video Facebook</label>
                             <input type="url" id="liveUrlInput" placeholder="Tempel URL video dari Facebook di sini...">
                         </div>
-                        
-                        <div class="form-group" style="background-color: #f9fafb; padding: 15px; border-radius: 5px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <label style="margin-bottom: 0;">Status Siaran Saat Ini</label>
-                                <div>
-                                    <span style="margin-right: 10px; font-weight:bold; font-size: 1.1em;" id="liveStatusLabel">OFFLINE</span>
-                                    <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                                        <input type="checkbox" id="isLiveToggle" style="opacity: 0; width: 0; height: 0;">
-                                        <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-                                    </label>
-                                </div>
+                        <div class="live-status-control">
+                            <label>Status Siaran Saat Ini</label>
+                            <div class="live-status-toggle">
+                                <span id="liveStatusLabel">OFFLINE</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="isLiveToggle">
+                                    <span class="slider"></span>
+                                </label>
                             </div>
                         </div>
-                        
                         <button type="submit" id="liveUpdateButton"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button>
                     </form>
                     <p id="liveStatusMessage" style="text-align: center; margin-top: 20px; font-weight: bold; height: 20px;"></p>
@@ -204,9 +290,9 @@
     </div>
 
     <script>
-        const password = "adminmediajbtv"; // GANTI DENGAN PASSWORD RAHASIA ANDA
+        // Password protection
+        const password = "adminmediajbtv";
         const enteredPassword = prompt("Masukkan Password Admin:");
-
         if (enteredPassword !== password) {
             alert("Password Salah! Akses ditolak.");
             document.body.innerHTML = '<h1>Akses Ditolak</h1>';
@@ -214,21 +300,30 @@
         }
     
         document.addEventListener("DOMContentLoaded", function () {
-            // === LOGIKA NAVIGASI SIDEBAR ===
+            // === [BARU & LENGKAP] LOGIKA RESPONSIVE & NAVIGASI ===
             const sidebar = document.querySelector('.sidebar');
             const menuToggle = document.getElementById('menu-toggle');
+            const sidebarOverlay = document.querySelector('.sidebar-overlay');
             const sidebarLinks = document.querySelectorAll('.sidebar-link');
             const contentPages = document.querySelectorAll('.content-page');
 
-            // Set halaman default
-            const defaultPage = 'content-livestream';
-            document.querySelector(`.sidebar-link[data-target="${defaultPage}"]`).classList.add('active');
-            document.getElementById(defaultPage).classList.add('active');
+            function closeSidebar() {
+                sidebar.classList.remove('is-open');
+                sidebarOverlay.classList.remove('is-open');
+            }
+
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('is-open');
+                    sidebarOverlay.classList.toggle('is-open');
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', closeSidebar);
+            }
 
             sidebarLinks.forEach(link => {
-                // Hapus class 'active' dari semua link saat pertama kali load, kecuali default
-                if(link.dataset.target !== defaultPage) link.classList.remove('active');
-
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const targetId = link.dataset.target;
@@ -238,15 +333,19 @@
                     contentPages.forEach(p => p.classList.remove('active'));
 
                     link.classList.add('active');
-                    targetPage.classList.add('active');
+                    if (targetPage) {
+                        targetPage.classList.add('active');
+                    }
 
                     if (window.innerWidth <= 768) {
-                        sidebar.classList.remove('is-open');
+                        closeSidebar();
                     }
                 });
             });
 
-            // === KONEKSI & KONFIGURASI FIREBASE ===
+            // === [DIKEMBALIKAN] SEMUA KODE JAVASCRIPT ASLI ANDA ===
+            
+            // Konfigurasi Firebase
             const firebaseConfig = {
                 apiKey: "AIzaSyAowVtnXTVstFSc3kSBTm5tXJkEvp31V2Y",
                 authDomain: "streamingjbtv.firebaseapp.com",
@@ -259,7 +358,7 @@
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
             
-            // === [PERUBAHAN 3] LOGIKA LIVE STREAM DITAMBAHKAN DI SINI ===
+            // Logika Live Stream
             const liveStreamRef = db.ref('live_stream');
             const liveStreamForm = document.getElementById('liveStreamForm');
             const liveUrlInput = document.getElementById('liveUrlInput');
@@ -325,7 +424,7 @@
             
             loadCurrentLiveData();
 
-            // --- SEMUA KODE LAMA ANDA TETAP UTUH ---
+            // Logika Text Editor
             const editorToolbar = document.querySelector('.text-editor-toolbar');
             const articleContentEditor = document.getElementById('articleContent');
             if(editorToolbar) {
@@ -339,6 +438,7 @@
                 });
             }
 
+            // Logika Pertanyaan Masuk
             const questionsRef = db.ref('pertanyaanMasuk');
             const questionListContainer = document.getElementById('questionList');
             const articleTitleFieldForQuestion = document.getElementById('articleTitle');
@@ -400,6 +500,7 @@
                 }
             });
             
+            // Logika Artikel
             const articleForm = document.getElementById('articleForm');
             const articleSubmitBtn = document.getElementById('articleSubmitBtn');
             const articleIdField = document.getElementById('articleId');
@@ -478,6 +579,7 @@
                 }
             });
             
+            // Logika Jadwal, Tanggal, Pengumuman
             const tanggalRef = db.ref('infoSitus/rentangTanggal');
             const jadwalRef = db.ref('jadwalKajian');
             const pengumumanRef = db.ref('pengumuman');
