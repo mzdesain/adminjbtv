@@ -273,233 +273,254 @@
                 <div class="content-card">
                     <h4><i class="fa-solid fa-pen-to-square"></i> Kelola Artikel Tanya Jawab</h4>
                     <form id="articleForm">
-    <input type="hidden" id="articleId">
-    <input type="text" id="articleTitle" placeholder="Judul Artikel / Pertanyaan" required>
-    <textarea id="articleContent" placeholder="Isi Artikel / Jawaban dari Ustadz..." required></textarea>
-    
-    <div id="form-button-container">
-        <button type="submit" id="articleSubmitBtn">Simpan Artikel Baru</button>
-        </div>
-</form>
+                        <input type="hidden" id="articleId"> <input type="text" id="articleTitle" placeholder="Judul Artikel / Pertanyaan" required>
+                        <textarea id="articleContent" placeholder="Isi Artikel / Jawaban dari Ustadz..." required></textarea>
+                        <button type="submit" id="articleSubmitBtn">Simpan Artikel Baru</button>
+                    </form>
                     <div id="articleList" class="item-list"></div>
                 </div>
             </div>
         </main>
     </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    // === LOGIKA UNTUK NAVIGASI SIDEBAR DAN TAMPILAN MOBILE ===
-    const sidebar = document.querySelector('.sidebar');
-    const menuToggle = document.getElementById('menu-toggle');
-    const sidebarLinks = document.querySelectorAll('.sidebar-link');
-    const contentPages = document.querySelectorAll('.content-page');
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // === LOGIKA UNTUK NAVIGASI SIDEBAR DAN TAMPILAN MOBILE ===
+            const sidebar = document.querySelector('.sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const contentPages = document.querySelectorAll('.content-page');
 
-    menuToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('is-open');
-    });
+            // Tampilkan/sembunyikan sidebar saat tombol menu di mobile diklik
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('is-open');
+            });
 
-    sidebarLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetId = link.dataset.target;
-            const targetPage = document.getElementById(targetId);
-            
-            sidebarLinks.forEach(l => l.classList.remove('active'));
-            contentPages.forEach(p => p.classList.remove('active'));
-            
-            link.classList.add('active');
-            targetPage.classList.add('active');
+            // Logika untuk berpindah halaman konten saat link sidebar diklik
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.dataset.target;
+                    const targetPage = document.getElementById(targetId);
+                    
+                    // Nonaktifkan semua link dan halaman
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    contentPages.forEach(p => p.classList.remove('active'));
+                    
+                    // Aktifkan link dan halaman yang dituju
+                    link.classList.add('active');
+                    targetPage.classList.add('active');
 
-            if (window.innerWidth <= 768) {
-                sidebar.classList.remove('is-open');
-            }
-        });
-    });
-    
-    // === KONEKSI & KONFIGURASI FIREBASE ===
-    const firebaseConfig = {
-        apiKey: "AIzaSyAowVtnXTVstFSc3kSBTm5tXJkEvp31V2Y",
-        authDomain: "streamingjbtv.firebaseapp.com",
-        databaseURL: "https://streamingjbtv-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "streamingjbtv",
-        storageBucket: "streamingjbtv.appspot.com",
-        messagingSenderId: "191301318558",
-        appId: "1:191301318558:web:f32dada7468d8a4486088f"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    
-    // === KELOLA PERTANYAAN MASUK ===
-    const questionsRef = db.ref('pertanyaanMasuk');
-    const questionListContainer = document.getElementById('questionList');
-
-    questionsRef.orderByChild('timestamp').on('value', (snapshot) => {
-        questionListContainer.innerHTML = '<h5>Daftar Pertanyaan Terbaru</h5>';
-        if (snapshot.exists()) {
-            const questions = [];
-            snapshot.forEach(child => {
-                questions.push({ key: child.key, ...child.val() });
+                    // Di mobile, tutup sidebar secara otomatis setelah link diklik
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('is-open');
+                    }
+                });
             });
             
-            questions.reverse();
+            // === KONEKSI & KONFIGURASI FIREBASE ===
+            const firebaseConfig = {
+                apiKey: "AIzaSyAowVtnXTVstFSc3kSBTm5tXJkEvp31V2Y",
+                authDomain: "streamingjbtv.firebaseapp.com",
+                databaseURL: "https://streamingjbtv-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "streamingjbtv",
+                storageBucket: "streamingjbtv.appspot.com",
+                messagingSenderId: "191301318558",
+                appId: "1:191301318558:web:f32dada7468d8a4486088f"
+            };
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+            
+            // === KELOLA PERTANYAAN MASUK ===
+            const questionsRef = db.ref('pertanyaanMasuk');
+            const questionListContainer = document.getElementById('questionList');
+            const articleFormForQuestion = document.getElementById('articleForm');
+            const articleTitleFieldForQuestion = document.getElementById('articleTitle');
+            const articleContentFieldForQuestion = document.getElementById('articleContent');
 
-            questions.forEach(data => {
-                const item = document.createElement('div');
-                item.className = 'item';
+            // Ambil dan tampilkan daftar pertanyaan
+            questionsRef.orderByChild('timestamp').on('value', (snapshot) => {
+                questionListContainer.innerHTML = '<h5>Daftar Pertanyaan Terbaru</h5>';
+                if (snapshot.exists()) {
+                    const questions = [];
+                    snapshot.forEach(child => {
+                        questions.push({ key: child.key, ...child.val() });
+                    });
+                    
+                    questions.reverse(); // Balik urutan agar yang terbaru tampil di atas
+
+                    questions.forEach(data => {
+                        const item = document.createElement('div');
+                        item.className = 'item'; 
+                        
+                        item.innerHTML = `
+                            <div class="item-header">
+                                <div class="item-details">
+                                    <strong>Dari: ${data.nama}</strong>
+                                    <p class="question-meta">${new Date(data.timestamp).toLocaleString('id-ID')}</p>
+                                </div>
+                            </div>
+                            <div class="question-text">${data.pertanyaan}</div>
+                            <div class="action-btn-group">
+                                <button class="btn-make-article" data-key="${data.key}" title="Jadikan Artikel"><i class="fa-solid fa-file-circle-plus"></i> Buat Artikel</button>
+                                <button class="delete-btn" data-key="${data.key}" title="Hapus Pertanyaan"><i class="fa-solid fa-trash"></i> Hapus</button>
+                            </div>
+                        `;
+                        questionListContainer.appendChild(item);
+                    });
+                } else {
+                    questionListContainer.innerHTML += '<p>Belum ada pertanyaan yang masuk.</p>';
+                }
+            });
+
+            // Event listener untuk tombol "Jadikan Artikel" dan "Hapus" pada pertanyaan
+            questionListContainer.addEventListener('click', (e) => {
+                const button = e.target.closest('button');
+                if (!button) return;
+
+                const key = button.dataset.key;
+
+                // Jika tombol hapus diklik
+                if (button.classList.contains('delete-btn')) {
+                    if (confirm('Anda yakin ingin menghapus pertanyaan ini?')) {
+                        questionsRef.child(key).remove();
+                    }
+                }
+
+                // Jika tombol "Jadikan Artikel" diklik
+                if (button.classList.contains('btn-make-article')) {
+                    questionsRef.child(key).once('value', (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            // Salin judul dan isi pertanyaan ke form artikel
+                            articleTitleFieldForQuestion.value = data.pertanyaan;
+                            articleContentFieldForQuestion.value = `Pertanyaan dari: ${data.nama}\n\n"${data.pertanyaan}"\n\n--------------------\n\nJawaban:\n\n`;
+                            alert('Pertanyaan disalin ke form Artikel. Silakan isi jawabannya.');
+                            
+                            // Pindah ke halaman artikel dan scroll ke form
+                            document.querySelector('.sidebar-link[data-target="content-artikel"]').click();
+                            setTimeout(() => articleFormForQuestion.scrollIntoView({ behavior: 'smooth' }), 200);
+                        }
+                    });
+                }
+            });
+
+            // === KELOLA ARTIKEL (CREATE, READ, UPDATE, DELETE) ===
+            const articleForm = document.getElementById('articleForm');
+            const articleSubmitBtn = document.getElementById('articleSubmitBtn');
+            const articleIdField = document.getElementById('articleId');
+            const articleTitleField = document.getElementById('articleTitle');
+            const articleContentField = document.getElementById('articleContent');
+            const articleListContainer = document.getElementById('articleList');
+            const articlesRef = db.ref('articles');
+
+            // Fungsi untuk mereset form artikel
+            function resetArticleForm() {
+                articleForm.reset();
+                articleIdField.value = '';
+                articleSubmitBtn.textContent = 'Simpan Artikel Baru';
+                articleSubmitBtn.style.backgroundColor = 'var(--primary-color)';
+            }
+
+            // Event listener untuk submit form artikel (bisa untuk buat baru atau update)
+            articleForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const title = articleTitleField.value.trim();
+                const content = articleContentField.value.trim();
+                if (!title || !content) return alert('Judul dan Isi tidak boleh kosong!');
                 
-                item.innerHTML = `
-                    <div class="item-header">
-                        <div class="item-details">
-                            <strong>Dari: ${data.nama}</strong>
-                            <p class="question-meta">${new Date(data.timestamp).toLocaleString('id-ID')}</p>
-                        </div>
-                    </div>
-                    <div class="question-text">${data.pertanyaan}</div>
-                    <div class="action-btn-group">
-                        <button class="btn-make-article" data-key="${data.key}" title="Jadikan Artikel"><i class="fa-solid fa-file-circle-plus"></i> Buat Artikel</button>
-                        <button class="delete-btn question-delete-btn" data-key="${data.key}" title="Hapus Pertanyaan"><i class="fa-solid fa-trash"></i> Hapus</button>
-                    </div>
-                `;
-                questionListContainer.appendChild(item);
-            });
-        } else {
-            questionListContainer.innerHTML += '<p>Belum ada pertanyaan yang masuk.</p>';
-        }
-    });
+                const data = { title: title, content: content, timestamp: Date.now() };
 
-    questionListContainer.addEventListener('click', (e) => {
-        const button = e.target.closest('button');
-        if (!button) return;
-
-        const key = button.dataset.key;
-
-        if (button.classList.contains('question-delete-btn')) {
-            if (confirm('Anda yakin ingin menghapus pertanyaan ini?')) {
-                questionsRef.child(key).remove();
-            }
-        }
-
-        if (button.classList.contains('btn-make-article')) {
-            questionsRef.child(key).once('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    // Panggil fungsi reset di sini SEBELUM mengisi form
-                    resetArticleForm(); 
-                    
-                    document.getElementById('articleTitle').value = data.pertanyaan;
-                    document.getElementById('articleContent').value = `Pertanyaan dari: ${data.nama}\n\n"${data.pertanyaan}"\n\n--------------------\n\nJawaban:\n\n`;
-                    alert('Pertanyaan disalin ke form Artikel. Silakan isi jawabannya.');
-                    
-                    document.querySelector('.sidebar-link[data-target="content-artikel"]').click();
-                    setTimeout(() => document.getElementById('articleForm').scrollIntoView({ behavior: 'smooth' }), 200);
+                // Cek apakah sedang mode edit atau buat baru
+                if (articleIdField.value) {
+                    // Update artikel yang ada
+                    articlesRef.child(articleIdField.value).update(data).then(() => {
+                        alert('Artikel berhasil diperbarui!');
+                        resetArticleForm();
+                    });
+                } else {
+                    // Simpan artikel baru
+                    articlesRef.push(data).then(() => {
+                        alert('Artikel berhasil disimpan!');
+                        resetArticleForm();
+                    });
                 }
             });
-        }
-    });
 
-    // === KELOLA ARTIKEL (PERBAIKAN FINAL) ===
-    const articleForm = document.getElementById('articleForm');
-    const articleSubmitBtn = document.getElementById('articleSubmitBtn');
-    const articleIdField = document.getElementById('articleId');
-    const articleTitleField = document.getElementById('articleTitle');
-    const articleContentField = document.getElementById('articleContent');
-    const articleListContainer = document.getElementById('articleList');
-    const articlesRef = db.ref('articles');
+            // =======================================================================
+            // === MULAI BLOK KODE YANG DIPERBAIKI ===
+            // =======================================================================
+            // Tampilkan daftar artikel
+            articlesRef.orderByChild('timestamp').on('value', (snapshot) => {
+                articleListContainer.innerHTML = '<h5>Daftar Artikel Tersimpan</h5>';
+                if (snapshot.exists()) {
+                    const articles = [];
+                    snapshot.forEach(child => {
+                        articles.push({ key: child.key, ...child.val() });
+                    });
+                    
+                    articles.reverse().forEach(data => {
+                        const item = document.createElement('div');
+                        item.className = 'item simple-item';
+                        
+                        // 1. Buat seluruh HTML sebagai satu string untuk kejelasan dan keandalan.
+                        item.innerHTML = `
+                            <div class="item-details">
+                                <strong>${data.title}</strong>
+                            </div>
+                            <div class="btn-container">
+                                <button class="edit-btn"><i class="fa-solid fa-pencil"></i> Edit</button>
+                                <button class="delete-btn"><i class="fa-solid fa-trash"></i> Hapus</button>
+                            </div>
+                        `;
 
-    // Ini adalah fungsi KUNCI untuk memperbaiki bug "tertimpa"
-    const resetArticleForm = () => {
-        articleForm.reset();
-        articleIdField.value = ''; // Mengosongkan ID adalah langkah terpenting
-        articleSubmitBtn.textContent = 'Simpan Artikel Baru';
-        articleSubmitBtn.style.backgroundColor = 'var(--primary-color)';
-    };
-
-    articleForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const title = articleTitleField.value.trim();
-        const content = articleContentField.value.trim();
-        if (!title || !content) return alert('Judul dan Isi tidak boleh kosong!');
-        
-        const data = { title, content, timestamp: Date.now() };
-
-        if (articleIdField.value) {
-            articlesRef.child(articleIdField.value).update(data).then(() => {
-                alert('Artikel berhasil diperbarui!');
-                resetArticleForm(); // Reset form setelah update
-            });
-        } else {
-            articlesRef.push(data).then(() => {
-                alert('Artikel berhasil disimpan!');
-                resetArticleForm(); // Reset form setelah simpan baru
-            });
-        }
-    });
-
-    articlesRef.orderByChild('timestamp').on('value', (snapshot) => {
-        articleListContainer.innerHTML = '<h5>Daftar Artikel Tersimpan</h5>';
-        if (snapshot.exists()) {
-            const articles = [];
-            snapshot.forEach(child => articles.push({ key: child.key, ...child.val() }));
-            
-            articles.reverse().forEach(data => {
-                const item = document.createElement('div');
-                item.className = 'item simple-item';
-                item.innerHTML = `
-                    <div class="item-details"><strong>${data.title}</strong></div>
-                    <div class="btn-container">
-                        <button class="edit-btn" data-key="${data.key}"><i class="fa-solid fa-pencil"></i> Edit</button>
-                        <button class="delete-btn article-delete-btn" data-key="${data.key}"><i class="fa-solid fa-trash"></i> Hapus</button>
-                    </div>`;
-                articleListContainer.appendChild(item);
-            });
-        } else {
-            articleListContainer.innerHTML += '<p>Belum ada artikel yang tersimpan.</p>';
-        }
-    });
-
-    articleListContainer.addEventListener('click', (e) => {
-        const button = e.target.closest('button');
-        if(!button) return;
-        const key = button.dataset.key;
-
-        if(button.classList.contains('article-delete-btn')) {
-            if (confirm('Yakin ingin menghapus artikel ini?')) {
-                articlesRef.child(key).remove();
-            }
-        }
-
-        if(button.classList.contains('edit-btn')) {
-            articlesRef.child(key).once('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    articleIdField.value = key;
-                    articleTitleField.value = data.title;
-                    articleContentField.value = data.content;
-                    articleSubmitBtn.textContent = 'Update Artikel';
-                    articleSubmitBtn.style.backgroundColor = 'var(--success-color)';
-                    articleForm.scrollIntoView({ behavior: 'smooth' });
+                        // 2. Cari tombol di dalam elemen 'item' yang baru dibuat dan tambahkan event listener.
+                        // Ini memastikan fungsi onclick terpasang dengan benar pada elemen yang tepat.
+                        item.querySelector('.edit-btn').onclick = () => {
+                            articleIdField.value = data.key;
+                            articleTitleField.value = data.title;
+                            articleContentField.value = data.content;
+                            articleSubmitBtn.textContent = 'Update Artikel';
+                            articleSubmitBtn.style.backgroundColor = 'var(--success-color)';
+                            articleForm.scrollIntoView({ behavior: 'smooth' });
+                        };
+                        
+                        item.querySelector('.delete-btn').onclick = () => {
+                            if (confirm(`Yakin ingin menghapus artikel "${data.title}"?`)) {
+                                articlesRef.child(data.key).remove();
+                            }
+                        };
+                        
+                        // 3. Tambahkan item yang sudah lengkap ke dalam daftar.
+                        articleListContainer.appendChild(item);
+                    });
+                } else {
+                    articleListContainer.innerHTML += '<p>Belum ada artikel yang tersimpan.</p>';
                 }
             });
-        }
-    });
+            // =======================================================================
+            // === SELESAI BLOK KODE YANG DIPERBAIKI ===
+            // =======================================================================
 
-    // === KELOLA JADWAL, PENGUMUMAN, TANGGAL (KODE ASLI ANDA YANG SUDAH JALAN) ===
-    const tanggalRef = db.ref('infoSitus/rentangTanggal');
-    const jadwalRef = db.ref('jadwalKajian');
-    const pengumumanRef = db.ref('pengumuman');
+            // === KELOLA JADWAL, PENGUMUMAN, TANGGAL (CRUD SEDERHANA) ===
+            const tanggalRef = db.ref('infoSitus/rentangTanggal');
+            const jadwalRef = db.ref('jadwalKajian');
+            const pengumumanRef = db.ref('pengumuman');
 
-    document.getElementById('tanggalForm').addEventListener('submit', (e) => { e.preventDefault(); tanggalRef.set(document.getElementById('tanggalText').value).then(() => { alert('Tanggal berhasil diupdate!'); document.getElementById('tanggalForm').reset(); }); });
-    tanggalRef.on('value', (s) => { document.getElementById('currentTanggalText').textContent = s.exists() ? s.val() : 'Belum diatur'; });
+            // Kelola Teks Tanggal
+            document.getElementById('tanggalForm').addEventListener('submit', (e) => { e.preventDefault(); tanggalRef.set(document.getElementById('tanggalText').value).then(() => { alert('Tanggal berhasil diupdate!'); document.getElementById('tanggalForm').reset(); }); });
+            tanggalRef.on('value', (s) => { document.getElementById('currentTanggalText').textContent = s.exists() ? s.val() : 'Belum diatur'; });
 
-    const jadwalListContainer = document.getElementById('jadwalList');
-    document.getElementById('jadwalForm').addEventListener('submit', e => { e.preventDefault(); const form = e.target; const data = { ustadzId: form.jadwalUstadz.value, ustadzName: form.jadwalUstadz.options[form.jadwalUstadz.selectedIndex].text, jenis: form.jadwalJenis.value, waktu: form.jadwalWaktu.value, lokasi: form.jadwalLokasi.value }; jadwalRef.push(data).then(() => { alert('Jadwal berhasil disimpan!'); form.reset(); }); });
-    jadwalRef.on('value', snapshot => { jadwalListContainer.innerHTML = '<h5>Daftar Jadwal</h5>'; if(snapshot.exists()) { snapshot.forEach(child => { const key = child.key; const data = child.val(); const item = document.createElement('div'); item.className = 'item simple-item'; item.innerHTML = `<div class="item-details"><strong>${data.ustadzName}</strong>: ${data.jenis} - ${data.waktu}</div>`; const btn = document.createElement('button'); btn.className = 'delete-btn'; btn.innerHTML = '<i class="fa-solid fa-trash"></i> Hapus'; btn.onclick = () => { if(confirm('Yakin ingin menghapus jadwal ini?')) jadwalRef.child(key).remove(); }; item.appendChild(btn); jadwalListContainer.appendChild(item); }); } else { jadwalListContainer.innerHTML += '<p>Belum ada jadwal yang tersimpan.</p>'; } });
+            // Kelola Jadwal
+            const jadwalListContainer = document.getElementById('jadwalList');
+            document.getElementById('jadwalForm').addEventListener('submit', e => { e.preventDefault(); const form = e.target; const data = { ustadzId: form.jadwalUstadz.value, ustadzName: form.jadwalUstadz.options[form.jadwalUstadz.selectedIndex].text, jenis: form.jadwalJenis.value, waktu: form.jadwalWaktu.value, lokasi: form.jadwalLokasi.value }; jadwalRef.push(data).then(() => { alert('Jadwal berhasil disimpan!'); form.reset(); }); });
+            jadwalRef.on('value', snapshot => { jadwalListContainer.innerHTML = '<h5>Daftar Jadwal</h5>'; if(snapshot.exists()) { snapshot.forEach(child => { const key = child.key; const data = child.val(); const item = document.createElement('div'); item.className = 'item simple-item'; item.innerHTML = `<div class="item-details"><strong>${data.ustadzName}</strong>: ${data.jenis} - ${data.waktu}</div>`; const btn = document.createElement('button'); btn.className = 'delete-btn'; btn.innerHTML = '<i class="fa-solid fa-trash"></i> Hapus'; btn.onclick = () => { if(confirm('Yakin ingin menghapus jadwal ini?')) jadwalRef.child(key).remove(); }; item.appendChild(btn); jadwalListContainer.appendChild(item); }); } else { jadwalListContainer.innerHTML += '<p>Belum ada jadwal yang tersimpan.</p>'; } });
 
-    const pengumumanListContainer = document.getElementById('pengumumanList');
-    document.getElementById('pengumumanForm').addEventListener('submit', e => { e.preventDefault(); const form = e.target; const data = { judul: form.pengumumanJudul.value, pemateri: form.pengumumanPemateri.value, waktu: form.pengumumanWaktu.value, lokasi: form.pengumumanLokasi.value, flyerUrl: form.pengumumanFlyerUrl.value }; pengumumanRef.push(data).then(() => { alert('Pengumuman berhasil disimpan!'); form.reset(); }); });
-    pengumumanRef.on('value', snapshot => { pengumumanListContainer.innerHTML = '<h5>Daftar Pengumuman</h5>'; if(snapshot.exists()) { snapshot.forEach(child => { const key = child.key; const data = child.val(); const item = document.createElement('div'); item.className = 'item simple-item'; item.innerHTML = `<div class="item-details"><strong>${data.judul}</strong> (${data.pemateri})</div>`; const btn = document.createElement('button'); btn.className = 'delete-btn'; btn.innerHTML = '<i class="fa-solid fa-trash"></i> Hapus'; btn.onclick = () => { if(confirm('Yakin ingin menghapus pengumuman ini?')) pengumumanRef.child(key).remove(); }; item.appendChild(btn); pengumumanListContainer.appendChild(item); }); } else { pengumumanListContainer.innerHTML += '<p>Belum ada pengumuman yang tersimpan.</p>'; } });
-});
-</script>
+            // Kelola Pengumuman
+            const pengumumanListContainer = document.getElementById('pengumumanList');
+            document.getElementById('pengumumanForm').addEventListener('submit', e => { e.preventDefault(); const form = e.target; const data = { judul: form.pengumumanJudul.value, pemateri: form.pengumumanPemateri.value, waktu: form.pengumumanWaktu.value, lokasi: form.pengumumanLokasi.value, flyerUrl: form.pengumumanFlyerUrl.value }; pengumumanRef.push(data).then(() => { alert('Pengumuman berhasil disimpan!'); form.reset(); }); });
+            pengumumanRef.on('value', snapshot => { pengumumanListContainer.innerHTML = '<h5>Daftar Pengumuman</h5>'; if(snapshot.exists()) { snapshot.forEach(child => { const key = child.key; const data = child.val(); const item = document.createElement('div'); item.className = 'item simple-item'; item.innerHTML = `<div class="item-details"><strong>${data.judul}</strong> (${data.pemateri})</div>`; const btn = document.createElement('button'); btn.className = 'delete-btn'; btn.innerHTML = '<i class="fa-solid fa-trash"></i> Hapus'; btn.onclick = () => { if(confirm('Yakin ingin menghapus pengumuman ini?')) pengumumanRef.child(key).remove(); }; item.appendChild(btn); pengumumanListContainer.appendChild(item); }); } else { pengumumanListContainer.innerHTML += '<p>Belum ada pengumuman yang tersimpan.</p>'; } });
+        });
+    </script>
     </body>
 </html>
